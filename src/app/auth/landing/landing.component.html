@@ -1,0 +1,20 @@
+<div class="welcome-container">
+    <div class="content">
+        <div class="mascot-container">
+            <img src="/images/penguin-mascot-1.png" alt="Mascota pingüino con herramientas" class="penguin-image"
+                (error)="onImageError($event)">
+        </div>
+
+        <div class="buttons-container">
+            <button class="btn btn-primary" (click)="navigateToLogin()">
+                Iniciar sesión
+                <span class="btn-arrow">→</span>
+            </button>
+
+            <button class="btn btn-secondary" (click)="navigateToRegister()">
+                Registro
+                <span class="btn-arrow">→</span>
+            </button>
+        </div>
+    </div>
+</div>
