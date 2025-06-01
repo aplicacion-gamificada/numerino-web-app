@@ -1,1 +1,19 @@
-<p>role-selection works!</p>
+<button class="fixed-back-button" (click)="goBackToScreenX()">
+  <span class="pi pi-arrow-left"></span>
+</button>
+
+<div class="role-container">
+  <div class="content">
+    <h1>¿Quién eres?</h1>
+    <div class="button-group">
+      <button class="student-button" (click)="navigateToRegister('student')">
+        <span class="pi pi-book" style="font-size: 2.5rem"></span>
+        Soy alumno
+      </button>
+      <button class="teacher-button" (click)="navigateToRegister('teacher')">
+        <span class="pi pi-graduation-cap" style="font-size: 2.5rem"></span>
+        Soy profesor</button>
+    </div>
+    <p class="description">Elige tu rol para una experiencia más personalizada</p>
+  </div>
+</div>
