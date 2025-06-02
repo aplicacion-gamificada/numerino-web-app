@@ -1,1 +1,31 @@
-<p>login works!</p>
+<button class="fixed-back-button" (click)="goBack()">
+    <span class="pi pi-arrow-left"></span>
+</button>
+
+<div class="container">
+    <h1 class="title">¡Bienvenido nuevamente!</h1>
+    <h2 class="subtitle">Ingresa para continuar tu aprendizaje divertido</h2>
+
+    <form [formGroup]="registrationForm" (ngSubmit)="handleSubmit()">
+        <div class="form-group">
+            <input type="text" class="form-input" placeholder="Correo o nombre de usuario" formControlName="username">
+        </div>
+
+        <div class="form-group">
+            <input [type]="showPassword ? 'text' : 'password'" class="form-input" placeholder="Contraseña"
+                formControlName="password">
+            <button type="button" class="password-toggle" (click)="togglePassword()">
+                <i [class]="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+            </button>
+        </div>
+
+        <button type="submit" class="register-button" [disabled]="!registrationForm.valid">
+            Iniciar sesión
+            <span class="btn-arrow">→</span>
+        </button>
+
+        <p class="access-problem">
+            ¿Problemas para ingresar? Recupera tu <br>acceso <a href="#" class="access-here">aquí</a>
+        </p>
+    </form>
+</div>

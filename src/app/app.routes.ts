@@ -4,6 +4,7 @@ import { LoginComponent } from './auth/login/login.component';
 import { RoleSelectionComponent } from './auth/register/role-selection/role-selection.component';
 import { StudentRegisterComponent } from './auth/register/student-register/student-register.component';
 import { TeacherRegisterComponent } from './auth/register/teacher-register/teacher-register.component';
+import { HomeComponent } from './learning/components/home/home.component';
 
 export const routes: Routes = [
     {
@@ -30,5 +31,9 @@ export const routes: Routes = [
     {
         path: 'teacher-register',
         component: TeacherRegisterComponent,
+    },
+    {
+        path: 'home',
+        component: HomeComponent
     }
 ];

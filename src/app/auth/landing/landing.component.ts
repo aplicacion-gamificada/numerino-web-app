@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
+import { ButtonModule } from 'primeng/button';
 
 @Component({
   selector: 'app-landing',
-  imports: [],
+  imports: [ButtonModule],
   templateUrl: './landing.component.html',
   styleUrl: './landing.component.scss'
 })

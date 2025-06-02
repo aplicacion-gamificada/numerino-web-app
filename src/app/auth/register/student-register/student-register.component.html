@@ -1,1 +1,55 @@
-<p>student-register works!</p>
+<button class="fixed-back-button" (click)="goBack()">
+  <span class="pi pi-arrow-left"></span>
+</button>
+
+<div class="container">
+  <h1 class="title">Completa tus datos para empezar</h1>
+
+  <form [formGroup]="registrationForm" (ngSubmit)="handleSubmit()">
+    <div class="form-group">
+      <input type="text" class="form-input" placeholder="Nombre completo" formControlName="fullName">
+    </div>
+
+    <div class="form-group">
+      <input type="text" class="form-input" placeholder="Apodo" formControlName="nickname">
+    </div>
+
+    <div class="form-group">
+      <input [type]="showPassword ? 'text' : 'password'" class="form-input" placeholder="Contraseña"
+        formControlName="password">
+      <button type="button" class="password-toggle" (click)="togglePassword()">
+        <i [class]="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+      </button>
+    </div>
+
+    <div class="form-group">
+      <input [type]="showConfirmPassword ? 'text' : 'password'" class="form-input" placeholder="Confirma tu contraseña"
+        formControlName="confirmPassword" [class.error]="hasPasswordMismatch()">
+      <button type="button" class="password-toggle" (click)="toggleConfirmPassword()">
+        <i [class]="showConfirmPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+      </button>
+    </div>
+
+    <div class="form-group">
+      <input type="text" class="form-input" placeholder="Código de clase (opcional)" formControlName="classCode">
+      <button type="button" class="help-icon" (mouseenter)="showTooltip = true" (mouseleave)="showTooltip = false">
+        <i class="pi pi-question-circle"></i>
+      </button>
+      <div class="tooltip" [class.show]="showTooltip">
+        <div class="tooltip-content">
+          ¡Pídeselo a tu docente!
+        </div>
+        <div class="tooltip-arrow"></div>
+      </div>
+    </div>
+
+    <p class="terms-text">
+      Al registrarte aceptas nuestra <a href="#" class="terms-link">Política de Términos y Condiciones</a>
+    </p>
+
+    <button type="submit" class="register-button" [disabled]="!registrationForm.valid">
+      Registrar
+      <span class="btn-arrow">→</span>
+    </button>
+  </form>
+</div>
