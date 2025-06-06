@@ -5,6 +5,10 @@ import { RoleSelectionComponent } from './auth/register/role-selection/role-sele
 import { StudentRegisterComponent } from './auth/register/student-register/student-register.component';
 import { TeacherRegisterComponent } from './auth/register/teacher-register/teacher-register.component';
 import { HomeComponent } from './learning/components/home/home.component';
+import { AchievementComponent } from './achievement/components/achievement/achievement.component';
+import { StudentProgressComponent } from './progress/components/student-progress/student-progress.component';
+import { StudentClassroomComponent } from './classroom/components/student-classroom/student-classroom.component';
+
 
 export const routes: Routes = [
     {
@@ -35,5 +39,18 @@ export const routes: Routes = [
     {
         path: 'home',
         component: HomeComponent
+    },
+    {
+        path: 'achievements',
+        component: AchievementComponent
+    },
+    {
+        path: 'progress',
+        component: StudentProgressComponent
+    },
+    {
+        path: 'classroom',
+        component: StudentClassroomComponent
     }
+
 ];

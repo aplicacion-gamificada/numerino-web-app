@@ -1,0 +1,11 @@
+.level-container {
+  @apply flex items-center gap-4 bg-white border border-gray-300 rounded-full px-4 py-2 shadow-sm w-full;
+}
+
+.progress-track {
+  @apply w-full h-5 rounded-full border border-orange-400 bg-white overflow-hidden;
+}
+
+.progress-fill {
+  @apply h-full bg-orange-400 rounded-l-full transition-all;
+}
