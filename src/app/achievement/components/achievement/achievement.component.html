@@ -1,8 +1,86 @@
+<!-- Contenedor principal -->
 <div class="h-screen grid grid-cols-[240px_1fr]">
-  <div class="row-span-3">
-    <app-sidebar-menu></app-sidebar-menu>
+  <app-sidebar-menu></app-sidebar-menu>
+
+  <!-- Contenido -->
+  <div class="bg-white p-8 overflow-y-auto">
+    <h2 class="text-2xl font-semibold text-gray-800 mb-6">Tus logros</h2>
+
+    <!-- Tarjetas resumen -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+      <!-- Logros conseguidos -->
+      <div class="border rounded-xl p-4 flex items-center gap-4">
+        <div class="text-3xl">🏅</div>
+        <div>
+          <p class="text-sm text-gray-600">Logros conseguidos</p>
+          <p class="text-lg font-semibold text-orange-600">8/22</p>
+        </div>
+      </div>
+
+      <!-- Puntos totales -->
+      <div class="border rounded-xl p-4 flex items-center gap-4">
+        <div class="text-3xl">⭐</div>
+        <div>
+          <p class="text-sm text-gray-600">Puntos totales</p>
+          <p class="text-lg font-semibold text-green-600">450</p>
+        </div>
+      </div>
+
+      <!-- Próximo logro -->
+      <div class="border rounded-xl p-4 flex items-center gap-4">
+        <div class="text-3xl">🚩</div>
+        <div>
+          <p class="text-sm text-gray-600">Próximo logro</p>
+          <p class="text-lg font-semibold text-blue-500">50 pts</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Logros desbloqueados -->
+    <div class="flex items-center justify-between mb-3">
+      <h3 class="text-xl font-semibold text-gray-800">Logros desbloqueados</h3>
+      <a href="#" class="text-sm text-gray-500 hover:underline">Ver más</a>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-10">
+      <!-- Logro 1 -->
+      <div class="border rounded-xl p-4">
+        <h4 class="font-semibold text-blue-700 mb-1">Maestro de las operaciones</h4>
+        <p class="text-sm text-gray-600 mb-1">Completa el Bloque 1</p>
+        <p class="text-sm text-green-600 font-semibold">+100 puntos</p>
+      </div>
+
+      <!-- Logro 2 -->
+      <div class="border rounded-xl p-4">
+        <h4 class="font-semibold text-red-600 mb-1">Racha de fuego</h4>
+        <p class="text-sm text-gray-600 mb-1">5 días consecutivos</p>
+        <p class="text-sm text-red-500 font-semibold">+50 puntos</p>
+      </div>
+
+      <!-- Logro 3 -->
+      <div class="border rounded-xl p-4">
+        <h4 class="font-semibold text-orange-500 mb-1">Matemático Veloz</h4>
+        <p class="text-sm text-gray-600 mb-1">Resuelve 5 ejercicios en menos de 5 minutos</p>
+        <p class="text-sm text-orange-500 font-semibold">+75 puntos</p>
+      </div>
+    </div>
+
+    <!-- Próximos logros -->
+    <h3 class="text-xl font-semibold text-gray-800 mb-4">Próximos logros</h3>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+      <!-- Próximo logro 1 -->
+      <div class="border rounded-xl p-4 bg-gray-100 text-gray-400">
+        <h4 class="font-semibold mb-1">Explorador Matemático</h4>
+        <p class="text-sm mb-1">Completa el Bloque 2</p>
+        <p class="text-sm font-semibold">+150 puntos</p>
+      </div>
+
+      <!-- Próximo logro 2 -->
+      <div class="border rounded-xl p-4 bg-gray-100 text-gray-400">
+        <h4 class="font-semibold mb-1">Conquistador Numérico</h4>
+        <p class="text-sm mb-1">Completa el Bloque 3</p>
+        <p class="text-sm font-semibold">+200 puntos</p>
+      </div>
+    </div>
   </div>
-  <div>2</div>
-  <div class="col-start-2 row-start-2">3</div>
-  <div class="col-start-2 row-start-3">4</div>
 </div>

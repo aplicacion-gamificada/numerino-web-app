@@ -19,6 +19,6 @@ menuItems = [
 
   user = {
     name: 'Diego Merino',
-    avatar: '🧒' 
+    avatar: 'images/icon-avatar-2.png' 
   };
 }
