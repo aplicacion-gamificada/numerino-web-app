@@ -2,3 +2,10 @@
 @use "primeicons/primeicons.css";
 @plugin "tailwindcss-primeui";
 @layer tailwind, primeng;
+
+.body {
+    font-family: "DM Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-style: normal;
+}

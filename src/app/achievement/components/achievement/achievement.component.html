@@ -1,86 +1,63 @@
 <!-- Contenedor principal -->
 <div class="h-screen grid grid-cols-[240px_1fr]">
-  <app-sidebar-menu></app-sidebar-menu>
+  <div class="bg-gray-400 flex items-center justify-center">
+    <app-sidebar-menu></app-sidebar-menu>
+  </div>
 
   <!-- Contenido -->
   <div class="bg-white p-8 overflow-y-auto">
-    <h2 class="text-2xl font-semibold text-gray-800 mb-6">Tus logros</h2>
+
+    <h2 class="logros-titulo">Tus logros</h2>
 
     <!-- Tarjetas resumen -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-      <!-- Logros conseguidos -->
-      <div class="border rounded-xl p-4 flex items-center gap-4">
-        <div class="text-3xl">🏅</div>
-        <div>
-          <p class="text-sm text-gray-600">Logros conseguidos</p>
-          <p class="text-lg font-semibold text-orange-600">8/22</p>
-        </div>
-      </div>
-
-      <!-- Puntos totales -->
-      <div class="border rounded-xl p-4 flex items-center gap-4">
-        <div class="text-3xl">⭐</div>
-        <div>
-          <p class="text-sm text-gray-600">Puntos totales</p>
-          <p class="text-lg font-semibold text-green-600">450</p>
-        </div>
-      </div>
-
-      <!-- Próximo logro -->
-      <div class="border rounded-xl p-4 flex items-center gap-4">
-        <div class="text-3xl">🚩</div>
-        <div>
-          <p class="text-sm text-gray-600">Próximo logro</p>
-          <p class="text-lg font-semibold text-blue-500">50 pts</p>
-        </div>
-      </div>
+      <app-achievement-summary [imageUrl]="'images/icon-logros-obtenidos.png'" [title]="'Logros conseguidos'"
+        [subtitle]="'8/22'" [subtitleColor]="'#EF6C00'"></app-achievement-summary>
+      <app-achievement-summary [imageUrl]="'images/icon-puntos-totales.png'" [title]="'Puntos totales'"
+        [subtitle]="'450'" [subtitleColor]="'#59D721'"></app-achievement-summary>
+      <app-achievement-summary [imageUrl]="'images/icon-proximo-logro.png'" [title]="'Próximo logro en'"
+        [subtitle]="'50 puntos'" [subtitleColor]="'#28BFEE'"></app-achievement-summary>
     </div>
 
     <!-- Logros desbloqueados -->
-    <div class="flex items-center justify-between mb-3">
-      <h3 class="text-xl font-semibold text-gray-800">Logros desbloqueados</h3>
-      <a href="#" class="text-sm text-gray-500 hover:underline">Ver más</a>
+    <div class="flex items-center justify-between">
+      <h3 class="logros-subtitulo">Logros desbloqueados</h3>
+      <button (click)="toggleMostrarTodosDesbloqueados()" class="text-sm text-gray-500 hover:underline">
+        {{ mostrarTodosDesbloqueados ? 'Ver menos' : 'Ver más' }}
+      </button>
     </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-10">
-      <!-- Logro 1 -->
-      <div class="border rounded-xl p-4">
-        <h4 class="font-semibold text-blue-700 mb-1">Maestro de las operaciones</h4>
-        <p class="text-sm text-gray-600 mb-1">Completa el Bloque 1</p>
-        <p class="text-sm text-green-600 font-semibold">+100 puntos</p>
-      </div>
-
-      <!-- Logro 2 -->
-      <div class="border rounded-xl p-4">
-        <h4 class="font-semibold text-red-600 mb-1">Racha de fuego</h4>
-        <p class="text-sm text-gray-600 mb-1">5 días consecutivos</p>
-        <p class="text-sm text-red-500 font-semibold">+50 puntos</p>
-      </div>
-
-      <!-- Logro 3 -->
-      <div class="border rounded-xl p-4">
-        <h4 class="font-semibold text-orange-500 mb-1">Matemático Veloz</h4>
-        <p class="text-sm text-gray-600 mb-1">Resuelve 5 ejercicios en menos de 5 minutos</p>
-        <p class="text-sm text-orange-500 font-semibold">+75 puntos</p>
-      </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-10 mt-10">
+      <ng-container *ngFor="let logro of logrosMostrados">
+        <app-achievement-card [imageUrl]="logro.imageUrl" [title]="logro.title" [titleColor]="logro.titleColor"
+          [subtitle]="logro.subtitle" [points]="logro.points" [pointsColor]="logro.pointsColor"
+          (click)="abrirPopUp(logro)">
+        </app-achievement-card>
+      </ng-container>
     </div>
+
+    <!-- Pop-up de logro expandido -->
+    <app-achievement-card-expanded *ngIf="selectedLogro" [imageUrl]="selectedLogro.imageUrl"
+      [title]="selectedLogro.title" [titleColor]="selectedLogro.titleColor" [description]="selectedLogro.description"
+      [description_points]="selectedLogro.description_points" [pointsColor]="selectedLogro.pointsColor" (close)="cerrarPopUp()">
+    </app-achievement-card-expanded>
+
 
     <!-- Próximos logros -->
-    <h3 class="text-xl font-semibold text-gray-800 mb-4">Próximos logros</h3>
-    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-      <!-- Próximo logro 1 -->
-      <div class="border rounded-xl p-4 bg-gray-100 text-gray-400">
-        <h4 class="font-semibold mb-1">Explorador Matemático</h4>
-        <p class="text-sm mb-1">Completa el Bloque 2</p>
-        <p class="text-sm font-semibold">+150 puntos</p>
-      </div>
+     <div class="flex items-center justify-between">
+      <h3 class="logros-subtitulo">Próximos logros</h3>
+      <button (click)="toggleMostrarTodosBloqueados()" class="text-sm text-gray-500 hover:underline">
+        {{ mostrarTodosBloqueados ? 'Ver menos' : 'Ver más' }}
+      </button>
+     </div>
+    
 
-      <!-- Próximo logro 2 -->
-      <div class="border rounded-xl p-4 bg-gray-100 text-gray-400">
-        <h4 class="font-semibold mb-1">Conquistador Numérico</h4>
-        <p class="text-sm mb-1">Completa el Bloque 3</p>
-        <p class="text-sm font-semibold">+200 puntos</p>
-      </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-10 mt-10">
+      <ng-container *ngFor="let proximos_logros of logrosBloqueadosMostrados">
+        <app-achievement-card [imageUrl]="proximos_logros.imageUrl" [title]="proximos_logros.title"
+          [titleColor]="proximos_logros.titleColor" [subtitle]="proximos_logros.subtitle"
+          [points]="proximos_logros.points" [pointsColor]="proximos_logros.pointsColor">
+        </app-achievement-card>
+      </ng-container>
     </div>
   </div>
-</div>

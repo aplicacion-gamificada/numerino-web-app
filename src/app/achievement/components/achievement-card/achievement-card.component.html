@@ -1,1 +1,12 @@
-<p>achievement-card works!</p>
+<div class="card-logro">
+  <img [src]="imageUrl" alt="Icono" class="logro-icon" />
+  <div class="logro-texto">
+    <div class="logro-titulo" [ngStyle]="{ color: titleColor }">
+      {{ title }}
+    </div>
+    <div class="logro-subtitulo">{{ subtitle }}</div>
+    <div class="logro-puntos" [ngStyle]="{ color: pointsColor }">
+      {{ points }}
+    </div>
+  </div>
+</div>

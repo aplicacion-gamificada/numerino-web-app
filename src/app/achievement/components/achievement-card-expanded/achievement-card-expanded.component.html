@@ -1,1 +1,16 @@
-<p>achievement-card-expanded works!</p>
+<div class="popup-overlay" (click)="close.emit()">
+  <div class="popup-card" @popupAnimation (click)="$event.stopPropagation()">
+    
+    <!-- Botón de cierre (X) -->
+    <button class="popup-close-x" (click)="close.emit()">✕</button>
+
+    <!-- Imagen centrada horizontalmente -->
+    <div class="popup-img-container">
+      <img [src]="imageUrl" alt="Logro" class="popup-img" />
+    </div>
+
+    <h2 class="popup-title" [style.color]="titleColor">{{ title }}</h2>
+    <p class="popup-description">{{ description }}</p>
+    <p class="popup-description-points" [style.color]="pointsColor">{{ description_points }}</p>
+  </div>
+</div>

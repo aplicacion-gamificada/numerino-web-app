@@ -1,0 +1,63 @@
+.popup-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 50;
+}
+
+.popup-card {
+  position: relative;
+  background: white;
+  border-radius: 1rem;
+  padding: 1rem 1.5rem;
+  width: 370px;
+  height: 450px;
+  text-align: center;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+// Nuevo contenedor centrador
+.popup-img-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.popup-img {
+  width: 140px;
+}
+
+.popup-title {
+  font-size: 24px;
+}
+
+.popup-description {
+  color: #555;
+  font-size: 20px;
+}
+
+.popup-description-points {
+  font-weight: bold;
+  font-size: 1.25rem;
+  margin-top: 1rem;
+}
+
+// Botón de cierre en la esquina superior derecha
+.popup-close-x {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  color: #aaa;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.popup-close-x:hover {
+  color: #000;
+}

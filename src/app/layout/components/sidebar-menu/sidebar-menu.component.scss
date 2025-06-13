@@ -1,5 +1,53 @@
 :host {
   height: 100vh;
   background-color: white;
-  border-right: 1px solid #e5e7eb;
+  border-right: 3px solid #DDDDDD;
+  font-family: "DM Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
+}
+
+.menu-item {
+  display: flex;
+  justify-content: center; // centra el bloque icono + texto
+  padding: 0.5rem 0;
+  border-radius: 15px;
+  text-decoration: none;
+  font-size: 20px;
+  transition: background-color 0.2s;
+  color: #4B4B4B;
+  font-weight: 500;
+
+  &:hover {
+    background-color: #EFF6FF;
+  }
+
+  &.active-link {
+    background-color: rgba(208, 224, 239, 0.7);
+    border: 1px solid #1C4772;
+    color: #1C4772;
+    font-weight: bold;
+  }
+}
+
+.menu-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: 160px; // ancho fijo para alinear los bloques
+  justify-content: flex-start; // ícono y texto alineados a la izquierda del bloque
+}
+
+.menu-icon {
+  width: 40px;
+}
+
+.menu-label {
+  white-space: nowrap;
+  font-size: 20px;
+}
+
+.username{
+  font-size: 20px;
 }
