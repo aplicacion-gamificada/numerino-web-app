@@ -1,0 +1,53 @@
+:host{
+    font-family: "DM Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-style: normal;
+}
+
+.resumen-general-card {
+  border: 3px solid #DDDDDD; 
+  border-radius: 20px; 
+  padding: 1.2rem 1.5rem; 
+}
+
+.resumen-titulo {
+  font-size: 24px;
+  font-weight: 500; 
+  color: #FF6C4E; 
+}
+
+.resumen-texto {
+  font-size: 16px; 
+  color: #828282; // gray-600
+  margin-bottom: 5px;
+  margin-top: 5px;
+
+  &:first-of-type {
+    margin-top: 0;
+  }
+}
+
+.resumen-barra-externa {
+  box-sizing: border-box;
+  width: 100%;
+  background-color: #FFFFFF;
+  border: 2px solid #FF6C4E;
+  border-radius: 15px;
+  height: 25px;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+}
+
+.resumen-barra-interna {
+  background-color: #FF6C4E;
+  height: 100%; 
+  border-radius: 9999px;
+}
+
+
+.resumen-destacado {
+  color: #FF6C4E; // red-600
+  font-weight: 500; // semibold
+}

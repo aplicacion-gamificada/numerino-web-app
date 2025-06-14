@@ -1,0 +1,40 @@
+:host {
+    font-family: "DM Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-style: normal;
+}
+
+.tiempo-estudio-card {
+    border: 3px solid #DDDDDD;
+    border-radius: 20px; 
+    padding: 1.5rem; 
+}
+
+.tiempo-estudio-titulo {
+    font-size: 24px; 
+    font-weight: 500; 
+    color: #F67905; 
+    margin-bottom: 0.5rem;
+}
+
+.tiempo-estudio-descripcion {
+    font-size: 20px;
+    color: #828282;
+    font-weight: 500;
+}
+
+span {
+    font-weight: 500; 
+    color: #0DA76B;
+}
+
+.progreso {
+    font-size: 20px;
+    color: #FF6C4E;
+    padding-top: 10px;
+
+    span {
+        color: #0DA76B; // text-green-600
+    }
+}

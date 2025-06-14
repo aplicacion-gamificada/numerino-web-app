@@ -1,0 +1,61 @@
+.bloque-container {
+  display: flex;
+  align-items: center;
+  background-color: #fff;
+  border: 3px solid #DDDDDD;
+  border-radius: 20px;
+  padding: 8px 16px;
+  gap: 12px;
+  width: 100%;
+  height: 78px;
+  box-sizing: border-box;
+  margin: 5px 0px;
+}
+
+.bloque-icono {
+  font-weight: bold;
+  border-radius: 4px;
+  font-size: 16px;
+  min-width: 28px;
+  min-height: 28px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+}
+
+.bloque-nombre {
+  color: #1D4872;
+  font-size: 22px;
+  font-weight: 500;
+}
+
+.bloque-barra-contenedor {
+  flex: 1;
+  height: 37px;
+  background-color: white;
+  border: 2px solid #1D4872;
+  border-radius: 15px;
+  overflow: hidden;
+  margin: 0 8px;
+}
+
+.bloque-barra {
+  height: 100%;
+  background-color: #1D4872;
+  border-radius: 10px 0 0 10px;
+  transition: width 0.3s ease-in-out;
+}
+
+.bloque-porcentaje {
+  color: #1D4872;
+  font-weight: bold;
+}

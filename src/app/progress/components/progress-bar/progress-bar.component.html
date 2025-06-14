@@ -1,0 +1,18 @@
+<div class="bloque-container">
+  <div class="bloque-icono">
+    @if (bloqueImagenUrl) {
+    <img [src]="bloqueImagenUrl" alt="Bloque" />
+    } @else {
+    {{ bloqueNombre.split(' ')[1] || '?' }}
+    }
+  </div>
+
+
+  <span class="bloque-nombre">{{ bloqueNombre }}</span>
+
+  <div class="bloque-barra-contenedor">
+    <div class="bloque-barra" [style.width.%]="progreso"></div>
+  </div>
+
+  <span class="bloque-porcentaje">{{ progreso }}%</span>
+</div>

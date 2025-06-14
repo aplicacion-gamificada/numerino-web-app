@@ -1,0 +1,48 @@
+:host{
+    font-family: "DM Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-style: normal;
+}
+
+.progreso-titulo{
+    color: #4B4B4B;
+    font-size: 30px;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.progreso-subtitulo{
+    color: #4B4B4B;
+    font-size: 24px;
+    font-weight: 500;
+}
+
+.metas-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1.25rem;
+}
+
+.meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border: 3px solid #DDDDDD; 
+  border-radius: 15px; // full
+  padding: 0.5rem 1rem;
+  background-color: white;
+
+  .meta-icon {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+  }
+
+  .meta-text {
+    font-size: 16px; // text-sm
+    font-weight: 500;
+    color: #4B4B4B; // gray-800
+  }
+}

@@ -5,99 +5,50 @@
   </div>
 
   <!-- Contenido -->
-  <div class="bg-white p-8 overflow-y-auto">
-    <h2 class="text-2xl font-semibold text-gray-800 mb-6">Tu progreso</h2>
+  <div class="bg-white p-8 overflow-y-scroll">
+    <h2 class="progreso-titulo">Tu progreso</h2>
 
     <!-- Panel superior -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-      <!-- Resumen General -->
-      <div class="border-3 border-gray-200 rounded-xl p-6">
-        <h3 class="text-lg font-semibold text-red-600 mb-2">Resumen General</h3>
-        <p class="text-sm text-gray-600 mb-2">Progreso total del curso:</p>
-        <div class="w-full bg-red-100 rounded-full h-4 mb-2">
-          <div class="bg-red-500 h-4 rounded-full" style="width: 25%;"></div>
-        </div>
-        <p class="text-sm text-gray-600 mt-2">Bloques completos: <span class="text-red-600 font-semibold">1/4</span></p>
-        <p class="text-sm text-gray-600">Ejercicios resueltos: <span class="text-red-600 font-semibold">38/200</span></p>
-      </div>
-
-      <!-- Tiempo de estudio -->
-      <div class="border-3 border-gray-200 rounded-xl p-6">
-        <h3 class="text-lg font-semibold text-orange-500 mb-2">Tiempo de estudio</h3>
-        <p class="text-sm text-gray-600">Esta semana: <span class="text-green-600 font-semibold">3h 20m</span></p>
-        <p class="text-sm text-gray-600">Semana pasada: <span class="text-emerald-500 font-semibold">2h 45m</span></p>
-        <p class="text-sm text-orange-600 mt-2">
-          ⭐ ¡Gran progreso! <span class="text-green-600 font-semibold">+20% del tiempo</span>
-        </p>
-      </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-5">
+      <app-general-review></app-general-review>
+      <app-study-time></app-study-time>
     </div>
 
     <!-- Progreso por bloques -->
-    <h3 class="text-xl font-semibold text-gray-800 mb-4">Progreso por bloques</h3>
-    <div class="flex flex-col gap-4 mb-10">
+    <h3 class="progreso-subtitulo">Progreso por bloques</h3>
+    <div class="flex flex-col gap-4 mt-5 mb-5">
       <!-- Repetir para cada bloque -->
-      <div class="flex items-center gap-4 border-3 border-gray-200 rounded-xl p-4">
-        <div class="text-white font-bold w-8 h-8 flex items-center justify-center rounded-full bg-blue-500">1</div>
-        <div class="flex-1">
-          <div class="font-semibold text-gray-800 mb-1">Bloque 1</div>
-          <div class="relative h-3 bg-gray-200 rounded-full">
-            <div class="absolute top-0 left-0 h-3 bg-blue-900 rounded-full" style="width: 45%;"></div>
-          </div>
-        </div>
-        <div class="text-sm text-gray-600 w-12 text-right">45%</div>
-      </div>
+      <app-progress-bar [bloqueNombre]="'Bloque 1'" [progreso]="50"
+        [bloqueImagenUrl]="'images/bloque-1.png'"></app-progress-bar>
 
       <!-- Bloque 2 -->
-      <div class="flex items-center gap-4 border-3 border-gray-200 rounded-xl p-4">
-        <div class="text-white font-bold w-8 h-8 flex items-center justify-center rounded-full bg-yellow-400">2</div>
-        <div class="flex-1">
-          <div class="font-semibold text-gray-800 mb-1">Bloque 2</div>
-          <div class="relative h-3 bg-gray-200 rounded-full">
-            <div class="absolute top-0 left-0 h-3 bg-yellow-400 rounded-full" style="width: 0%;"></div>
-          </div>
-        </div>
-        <div class="text-sm text-gray-600 w-12 text-right">0%</div>
-      </div>
+      <app-progress-bar [bloqueNombre]="'Bloque 2'" [progreso]="0"
+        [bloqueImagenUrl]="'images/bloque-2.png'"></app-progress-bar>
 
       <!-- Bloque 3 -->
-      <div class="flex items-center gap-4 border-3 border-gray-200 rounded-xl p-4">
-        <div class="text-white font-bold w-8 h-8 flex items-center justify-center rounded-full bg-red-400">3</div>
-        <div class="flex-1">
-          <div class="font-semibold text-gray-800 mb-1">Bloque 3</div>
-          <div class="relative h-3 bg-gray-200 rounded-full">
-            <div class="absolute top-0 left-0 h-3 bg-red-400 rounded-full" style="width: 0%;"></div>
-          </div>
-        </div>
-        <div class="text-sm text-gray-600 w-12 text-right">0%</div>
-      </div>
+      <app-progress-bar [bloqueNombre]="'Bloque 3'" [progreso]="0"
+        [bloqueImagenUrl]="'images/bloque-3.png'"></app-progress-bar>
 
       <!-- Bloque 4 -->
-      <div class="flex items-center gap-4 border-3 border-gray-200 rounded-xl p-4">
-        <div class="text-white font-bold w-8 h-8 flex items-center justify-center rounded-full bg-cyan-400">4</div>
-        <div class="flex-1">
-          <div class="font-semibold text-gray-800 mb-1">Bloque 4</div>
-          <div class="relative h-3 bg-gray-200 rounded-full">
-            <div class="absolute top-0 left-0 h-3 bg-cyan-400 rounded-full" style="width: 0%;"></div>
-          </div>
-        </div>
-        <div class="text-sm text-gray-600 w-12 text-right">0%</div>
-      </div>
+      <app-progress-bar [bloqueNombre]="'Bloque 4'" [progreso]="0"
+        [bloqueImagenUrl]="'images/bloque-4.png'"></app-progress-bar>
     </div>
 
     <!-- Próximas metas -->
-    <h3 class="text-xl font-semibold text-gray-800 mb-4">Tus próximas metas</h3>
-    <div class="flex flex-wrap gap-4">
+    <h3 class="progreso-subtitulo">Tus próximas metas</h3>
+    <div class="metas-container">
       <!-- Meta 1 -->
-      <div class="flex items-center gap-2 border-3 border-gray-200 rounded-full px-4 py-2">
-        <span class="text-xl">🏅</span>
-        <span class="text-sm text-gray-800 font-medium">Termina la ficha 5</span>
+      <div class="meta">
+        <img src="images/icon-proxima-meta.png" alt="Meta 1" class="meta-icon" />
+        <span class="meta-text">Termina la ficha 5</span>
       </div>
 
       <!-- Meta 2 -->
-      <div class="flex items-center gap-2 border-3 border-gray-200 rounded-full px-4 py-2">
-        <span class="text-xl">🔥</span>
-        <span class="text-sm text-gray-800 font-medium">Logra una racha de 7 días</span>
+      <div class="meta">
+        <img src="images/icon-racha.png" alt="Meta 2" class="meta-icon" />
+        <span class="meta-text">Logra una racha de 7 días</span>
       </div>
     </div>
+
   </div>
 </div>
