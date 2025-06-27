@@ -15,6 +15,10 @@
     </div>
 
     <div class="form-group">
+      <input type="text" class="form-input" placeholder="Correo electrónico de tu apoderado" formControlName="email">
+    </div>
+
+    <div class="form-group">
       <input [type]="showPassword ? 'text' : 'password'" class="form-input" placeholder="Contraseña"
         formControlName="password">
       <button type="button" class="password-toggle" (click)="togglePassword()">

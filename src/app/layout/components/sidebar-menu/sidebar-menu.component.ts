@@ -14,7 +14,8 @@ menuItems = [
   { label: 'Fichas', icon: 'images/icon-bloques.png', route: '/learning' },
   { label: 'Logros', icon: 'images/icon-logro.png', route: '/achievements' },
   { label: 'Progreso', icon: 'images/icon-progress.png', route: '/progress' },
-  { label: 'Aula', icon: 'images/icon-classroom.png', route: '/classroom' }
+  { label: 'Aula', icon: 'images/icon-classroom.png', route: '/classroom' },
+  { label: 'Salir', icon: 'images/icon-logout.png', route: '/welcome' }
 ];
 
   user = {

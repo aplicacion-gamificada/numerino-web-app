@@ -1,0 +1,14 @@
+<h2 class="titulo">¡Continúa tu aventura matemática!</h2>
+
+<div class="nivel-layout">
+  <app-bloque-card
+    *ngFor="let n of niveles"
+    [titulo]="n.titulo"
+    [subtexto]="n.subtexto"
+    [numero]="n.numero"
+    [colorFondo]="n.colorFondo"
+    [completados]="n.completados"
+    [total]="n.total"
+    [puntos]="n.puntos">
+  </app-bloque-card>
+</div>

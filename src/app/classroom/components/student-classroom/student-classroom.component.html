@@ -6,9 +6,9 @@
   </div>
 
   <!-- Contenido principal -->
-  <div class="bg-gray-50 p-8 overflow-y-auto">
+  <div class="bg-gray-50 p-8 overflow-y-scroll">
     <!-- Sección: Tu aula -->
-    <h2 class="text-2xl font-semibold text-gray-800 mb-6">Tu aula</h2>
+    <h2 class="aula-titulo">Tu aula</h2>
     <div class="bg-white rounded-xl shadow-sm p-6 flex justify-between items-center mb-10 border border-gray-200">
       <!-- Aula -->
       <div class="flex flex-col items-center text-center">
@@ -33,23 +33,18 @@
     </div>
 
     <!-- Sección: Tus compañeros -->
-    <h2 class="text-2xl font-semibold text-gray-800 mb-4">Tus compañeros</h2>
-    <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-      <div class="grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-6">
-        <!-- Repite esto para cada compañero -->
-        <div class="flex flex-col items-center text-center">
-          <img src="images/icon-avatar-1.png" class="w-16 h-16 rounded-full mb-2" alt="Pepito" />
-          <div class="font-medium text-gray-800 text-sm">Pepito</div>
-          <div class="text-xs text-gray-500">Bloque 1</div>
+    <div class="lista-wrapper">
+      <h2 class="aula-subtitulo">Tus compañeros</h2>
+
+      <div class="tarjeta-companeros">
+        <div class="grid">
+          <app-friends-card *ngFor="let c of companeros" [nombre]="c.nombre" [bloque]="c.bloque"
+            [imagenUrl]="c.imagenUrl">
+          </app-friends-card>
         </div>
-
-        <!-- Más compañeros aquí... -->
-      </div>
-
-      <!-- Enlace "ver más" -->
-      <div class="text-right mt-4">
-        <a href="#" class="text-sm text-blue-500 hover:underline">Ver más compañeros</a>
+        <a class="ver-mas" href="#">Ver más compañeros</a>
       </div>
     </div>
+
   </div>
 </div>

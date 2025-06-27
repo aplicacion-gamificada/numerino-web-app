@@ -1,0 +1,51 @@
+:host{
+    font-family: "DM Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 500;
+    font-style: normal;
+}
+
+.aula-titulo{
+    color: #4B4B4B;
+    font-size: 30px;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.aula-subtitulo{
+    color: #4B4B4B;
+    font-size: 24px;
+    font-weight: 500;
+}
+
+.lista-wrapper {
+  .titulo {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: #444;
+    margin-bottom: 0.75rem;
+  }
+
+  .tarjeta-companeros {
+    border: 2px solid #ddd;
+    border-radius: 16px;
+    padding: 1rem;
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+    gap: 1rem;
+  }
+
+  .ver-mas {
+    align-self: flex-end;
+    font-size: 0.85rem;
+    color: #777;
+    text-decoration: none;
+  }
+}

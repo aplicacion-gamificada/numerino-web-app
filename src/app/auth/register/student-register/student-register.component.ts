@@ -2,6 +2,8 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, AbstractControl, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
+import { RegisterService } from '../../services/register.service';
+import { StudentRegisterRequest } from '../../models/student-register.model';
 
 @Component({
   selector: 'app-student-register',
@@ -17,7 +19,8 @@ export class StudentRegisterComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private registerService: RegisterService
   ) { }
 
   ngOnInit(): void {
@@ -28,7 +31,15 @@ export class StudentRegisterComponent implements OnInit {
     this.registrationForm = this.fb.group({
       fullName: ['', [Validators.required, Validators.minLength(2)]],
       nickname: ['', [Validators.required, Validators.minLength(2)]],
-      password: ['', [Validators.required, Validators.minLength(6)]],
+      email: ['', [Validators.required, Validators.minLength(2)]],
+      password: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(6),
+          Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d])[A-Za-z\d\W]{6,}$/)
+        ]
+      ],
       confirmPassword: ['', [Validators.required]],
       classCode: ['']
     }, {
@@ -48,14 +59,6 @@ export class StudentRegisterComponent implements OnInit {
   }
 
   goBack(): void {
-    // Implementar navegación hacia atrás
-    // Opción 1: Usar Router
-    // this.router.navigate(['/login']);
-
-    // Opción 2: Usar location
-    // this.location.back();
-
-    // Opción 3: Usar window.history
     window.history.back();
 
     console.log('Navegando hacia atrás');
@@ -81,14 +84,11 @@ export class StudentRegisterComponent implements OnInit {
       const formData = {
         fullName: this.registrationForm.get('fullName')?.value,
         nickname: this.registrationForm.get('nickname')?.value,
+        email: this.registrationForm.get('email')?.value,
         password: this.registrationForm.get('password')?.value,
         confirmPassword: this.registrationForm.get('confirmPassword')?.value,
         classCode: this.registrationForm.get('classCode')?.value
       };
-
-      console.log('Datos del formulario:', formData);
-
-      // Llamar al servicio de registro
       this.submitRegistration(formData);
     } else {
       this.markFormGroupTouched();
@@ -110,33 +110,34 @@ export class StudentRegisterComponent implements OnInit {
     this.showTooltip = false;
   }
 
-  private async submitRegistration(data: any): Promise<void> {
-    try {
-      // Aquí implementarías la llamada a tu servicio
-      // Ejemplo:
-      // const result = await this.authService.register(data);
+  private submitRegistration(data: any): void {
+    const [firstName, ...lastNameArr] = data.fullName.trim().split(' ');
+    const lastName = lastNameArr.join(' ') || '';
 
-      console.log('Enviando datos de registro:', data);
+    const studentData: StudentRegisterRequest = {
+      firstName: firstName,
+      lastName: lastName,
+      email: data.email,
+      password: data.password,
+      username: data.nickname,
+      birth_date: '', 
+      institutionId: 1, 
+      guardianProfileId: 1 
+    };
 
-      // Simular respuesta exitosa
-      setTimeout(() => {
-        console.log('Registro exitoso');
-        // Redirigir al usuario después del registro exitoso
-        // this.router.navigate(['/dashboard']);
-        alert('¡Registro exitoso!');
-      }, 1000);
-
-      this.router.navigate(['/home']);
-
-    } catch (error) {
-      console.error('Error en el registro:', error);
-      alert('Error al registrar. Por favor, inténtalo de nuevo.');
-    }
+    this.registerService.registerStudent(studentData).subscribe({
+      next: (response) => {
+        this.router.navigate(['/home']);
+      },
+      error: (error) => {
+        alert('Error al registrar. Por favor, inténtalo de nuevo.');
+      }
+    });
   }
 
-  // Getters para facilitar el acceso a los controles del formulario
   get fullName() { return this.registrationForm.get('fullName'); }
   get nickname() { return this.registrationForm.get('nickname'); }
+  get email() { return this.registrationForm.get('email'); }
   get password() { return this.registrationForm.get('password'); }
   get confirmPassword() { return this.registrationForm.get('confirmPassword'); }
   get classCode() { return this.registrationForm.get('classCode'); }

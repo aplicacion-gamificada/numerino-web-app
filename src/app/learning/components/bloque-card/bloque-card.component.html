@@ -1,0 +1,45 @@
+<div class="learning-block" [class]="getBlockClass()">
+  <!-- Badge de puntos (solo si tiene puntos) -->
+  <div class="points-badge" *ngIf="block.points && block.points > 0">
+    {{ block.points }} puntos
+  </div>
+
+  <!-- Contenido principal del bloque -->
+  <div class="block-content">
+    <!-- Círculo con número/letra -->
+    <div class="block-circle">
+      {{ getDisplayId() }}
+    </div>
+
+    <!-- Título y subtítulo -->
+    <div class="block-info">
+      <h3 class="block-title">{{ block.title }}</h3>
+      <p class="block-subtitle" *ngIf="block.subtitle">{{ block.subtitle }}</p>
+    </div>
+
+    <!-- Indicadores de progreso (puntos) -->
+    <div class="progress-dots" *ngIf="block.totalLessons > 0">
+      <span 
+        class="dot" 
+        *ngFor="let completed of getProgressDots(); let i = index"
+        [class.completed]="completed">
+      </span>
+    </div>
+
+    <!-- Texto de progreso -->
+    <div class="progress-text">
+      <span *ngIf="block.status === 'completed'">
+        {{ block.completedLessons }}/{{ block.totalLessons }} Completados
+      </span>
+      <span *ngIf="block.status === 'in-progress'">
+        {{ block.completedLessons }}/{{ block.totalLessons }} Completados
+      </span>
+      <span *ngIf="block.status === 'recommended'">
+        Recomendado
+      </span>
+      <span *ngIf="block.status === 'locked'">
+        ¡Desbloquea este módulo!
+      </span>
+    </div>
+  </div>
+</div>

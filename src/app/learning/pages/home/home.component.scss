@@ -1,0 +1,41 @@
+:host {
+  display: block;
+  height: 100vh;
+  font-family: "DM Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
+}
+
+.barra-superior {
+  grid-column: span 2;
+  background-color: white;
+  padding: 0 1rem;
+  padding-top: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  .saludo {
+    font-size: 40px;
+    font-weight: 500;
+    color: #333;
+  }
+
+  .buscador {
+    padding: 0.5rem 1rem;
+    font-size: 0.95rem;
+    border: 3px solid #DDDDDD;
+    border-radius: 15px;
+    outline: none;
+    transition: border-color 0.2s;
+
+    &::placeholder {
+      color: #aaa;
+    }
+
+    &:focus {
+      border-color: #888;
+    }
+  }
+}

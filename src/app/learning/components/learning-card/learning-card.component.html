@@ -1,0 +1,22 @@
+<div class="learning-card" [class.blocked]="card.isBlocked">
+  <div class="card-header">
+    <div class="number-badge">{{ card.id }}</div>
+    <div class="card-content">
+      <h3 class="card-title">{{ card.title }}</h3>
+      <p class="card-subtitle">{{ card.subtitle }}</p>
+    </div>
+  </div>
+  
+  <div class="card-footer">
+    <div class="exercise-info">
+      <span class="exercise-count">{{ card.exerciseCount }}/10 Ejercicios</span>
+      <span class="status-badge" [ngClass]="getStatusClass()">
+        {{ card.status }}
+      </span>
+    </div>
+    <div class="points" *ngIf="!card.isBlocked">
+      <span class="points-icon">⭐</span>
+      <span class="points-text">{{ card.points }} Puntos</span>
+    </div>
+  </div>
+</div>
