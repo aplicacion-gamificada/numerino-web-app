@@ -1,0 +1,152 @@
+// =============================================================================
+// COLOR PALETTE - DESIGN SYSTEM
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// PRIMARY COLORS
+// -----------------------------------------------------------------------------
+$primary: #2EC3ED;
+$secondary: #324861;
+$tertiary: #FA9A1D;
+
+// -----------------------------------------------------------------------------
+// BRAND COLORS
+// -----------------------------------------------------------------------------
+$blue: #2CBAE6;
+$yellow: #FFD33A;
+$red: #FF817C;
+$green: #74DEDD;
+
+// -----------------------------------------------------------------------------
+// STATE COLORS
+// -----------------------------------------------------------------------------
+$error: #EE656D;
+$success: #0DA76B;
+$black: #282828;
+$white: #FFFFFF;
+
+// -----------------------------------------------------------------------------
+// COLOR MAPS FOR EASY ACCESS
+// -----------------------------------------------------------------------------
+$colors: (
+  // Primary palette
+  'primary': $primary,
+  'secondary': $secondary,
+  'tertiary': $tertiary,
+  
+  // Brand colors
+  'blue': $blue,
+  'yellow': $yellow,
+  'red': $red,
+  'green': $green,
+  
+  // State colors
+  'error': $error,
+  'success': $success,
+  'black': $black,
+  'white': $white
+);
+
+// -----------------------------------------------------------------------------
+// SEMANTIC COLOR VARIABLES
+// -----------------------------------------------------------------------------
+// Background colors
+$bg-primary: $primary;
+$bg-secondary: $secondary;
+$bg-success: $success;
+$bg-error: $error;
+$bg-white: $white;
+$bg-dark: $black;
+
+// Text colors
+$text-primary: $secondary;
+$text-secondary: rgba($secondary, 0.7);
+$text-white: $white;
+$text-dark: $black;
+$text-success: $success;
+$text-error: $error;
+
+// Border colors
+$border-primary: $primary;
+$border-secondary: $secondary;
+$border-light: rgba($secondary, 0.2);
+$border-error: $error;
+$border-success: $success;
+
+// -----------------------------------------------------------------------------
+// UTILITY FUNCTIONS
+// -----------------------------------------------------------------------------
+// Function to get color from map
+@function color($key) {
+  @return map-get($colors, $key);
+}
+
+// Function to create color variations
+@function lighten-color($color, $percentage) {
+  @return lighten($color, $percentage);
+}
+
+@function darken-color($color, $percentage) {
+  @return darken($color, $percentage);
+}
+
+@function alpha-color($color, $opacity) {
+  @return rgba($color, $opacity);
+}
+
+// -----------------------------------------------------------------------------
+// COLOR VARIATIONS
+// -----------------------------------------------------------------------------
+// Primary variations
+$primary-light: lighten($primary, 10%);
+$primary-dark: darken($primary, 10%);
+$primary-alpha: rgba($primary, 0.1);
+
+// Secondary variations
+$secondary-light: lighten($secondary, 10%);
+$secondary-dark: darken($secondary, 10%);
+$secondary-alpha: rgba($secondary, 0.1);
+
+// Error variations
+$error-light: lighten($error, 10%);
+$error-dark: darken($error, 10%);
+$error-alpha: rgba($error, 0.1);
+
+// Success variations
+$success-light: lighten($success, 10%);
+$success-dark: darken($success, 10%);
+$success-alpha: rgba($success, 0.1);
+
+// -----------------------------------------------------------------------------
+// MIXINS FOR COMMON COLOR USAGE
+// -----------------------------------------------------------------------------
+// Button color mixin
+@mixin button-color($bg-color, $text-color: $white) {
+  background-color: $bg-color;
+  color: $text-color;
+  border: 1px solid $bg-color;
+  
+  &:hover {
+    background-color: darken($bg-color, 10%);
+    border-color: darken($bg-color, 10%);
+  }
+  
+  &:active {
+    background-color: darken($bg-color, 15%);
+    border-color: darken($bg-color, 15%);
+  }
+}
+
+// Alert color mixin
+@mixin alert-color($bg-color, $text-color, $border-color) {
+  background-color: rgba($bg-color, 0.1);
+  color: $text-color;
+  border-left: 4px solid $border-color;
+}
+
+// Card color mixin
+@mixin card-color($bg-color: $white, $border-color: $border-light) {
+  background-color: $bg-color;
+  border: 1px solid $border-color;
+  box-shadow: 0 2px 4px rgba($black, 0.1);
+} 

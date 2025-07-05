@@ -3,14 +3,14 @@ import { CommonModule } from '@angular/common';
 
 export interface LearningBlock {
   id: number;
+  sequence: number;
   title: string;
   subtitle?: string;
   completedLessons: number;
   totalLessons: number;
   points?: number;
   status: 'completed' | 'in-progress' | 'locked' | 'recommended';
-  color: 'blue' | 'green' | 'coral' | 'gray';
-  isSpecial?: boolean; // Para el bloque de refuerzo
+  color: 'primary' | 'secondary' | 'tertiary' | 'blue' | 'green' | 'success' | 'locked';
 }
 
 @Component({
@@ -39,10 +39,6 @@ export class BloqueCardComponent {
   getBlockClass(): string {
     const classes = [`block-${this.block.color}`, `position-${this.position}`];
 
-    if (this.block.isSpecial) {
-      classes.push('special-block');
-    }
-
     if (this.block.status === 'locked') {
       classes.push('locked');
     }
@@ -50,7 +46,22 @@ export class BloqueCardComponent {
     return classes.join(' ');
   }
 
-  getDisplayId(): string {
-    return this.block.isSpecial ? 'R' : this.block.id.toString();
+  getDisplayNumber(): string {
+    return this.block.sequence.toString();
+  }
+
+  getProgressText(): string {
+    switch (this.block.status) {
+      case 'completed':
+        return `${this.block.completedLessons}/${this.block.totalLessons} Completados`;
+      case 'in-progress':
+        return `${this.block.completedLessons}/${this.block.totalLessons} Completados`;
+      case 'recommended':
+        return 'Recomendado';
+      case 'locked':
+        return '¡Desbloquea este módulo!';
+      default:
+        return '';
+    }
   }
 }

@@ -6,9 +6,9 @@
 
   <!-- Contenido principal del bloque -->
   <div class="block-content">
-    <!-- Círculo con número/letra -->
+    <!-- Círculo con número de secuencia -->
     <div class="block-circle">
-      {{ getDisplayId() }}
+      {{ getDisplayNumber() }}
     </div>
 
     <!-- Título y subtítulo -->
@@ -28,18 +28,7 @@
 
     <!-- Texto de progreso -->
     <div class="progress-text">
-      <span *ngIf="block.status === 'completed'">
-        {{ block.completedLessons }}/{{ block.totalLessons }} Completados
-      </span>
-      <span *ngIf="block.status === 'in-progress'">
-        {{ block.completedLessons }}/{{ block.totalLessons }} Completados
-      </span>
-      <span *ngIf="block.status === 'recommended'">
-        Recomendado
-      </span>
-      <span *ngIf="block.status === 'locked'">
-        ¡Desbloquea este módulo!
-      </span>
+      {{ getProgressText() }}
     </div>
   </div>
 </div>

@@ -99,14 +99,14 @@ export class HomeComponent implements OnInit {
 
       return {
         id: module.id,
+        sequence: module.sequence,
         title: module.title,
         subtitle: this.getSubtitleFromStatus(status, module.status),
         completedLessons,
         totalLessons,
         points: this.calculatePoints(completedLessons, totalLessons),
         status,
-        color: this.getColorByStatus(status, index),
-        isSpecial: false
+        color: this.getColorByStatus(status, index, modules.length)
       } as LearningBlock;
     });
   }
@@ -167,19 +167,39 @@ export class HomeComponent implements OnInit {
     }
   }
 
-  private getColorByStatus(status: string, index: number): 'blue' | 'green' | 'coral' | 'gray' {
-    switch (status) {
-      case 'completed':
-        return 'green';
-      case 'in-progress':
-        return 'blue';
-      case 'recommended':
-        return 'coral';
-      case 'locked':
-        return 'gray';
-      default:
-        return index % 2 === 0 ? 'blue' : 'green';
+  private getColorByStatus(status: string, index: number, totalModules: number): 'primary' | 'secondary' | 'tertiary' | 'blue' | 'green' | 'success' | 'locked' {
+    // Colores disponibles del design system
+    const availableColors: ('primary' | 'secondary' | 'tertiary' | 'blue' | 'green')[] = [
+      'primary',    // #2EC3ED - Azul principal
+      'secondary',  // #324861 - Azul oscuro
+      'tertiary',   // #FA9A1D - Naranja
+      'blue',       // #2CBAE6 - Azul claro
+      'green'       // #74DEDD - Verde agua
+    ];
+
+    // Si el bloque está completado, siempre usar success (verde)
+    if (status === 'completed') {
+      return 'success';
     }
+
+    // Si el bloque está bloqueado, usar locked (gris)
+    if (status === 'locked') {
+      return 'locked';
+    }
+
+    // Para bloques activos o recomendados, usar rotación inteligente
+    // Evitar repetición de colores contiguos
+    let colorIndex = index % availableColors.length;
+    
+    // Si hay más de un módulo, asegurar que no se repita el color del anterior
+    if (totalModules > 1 && index > 0) {
+      const previousColorIndex = (index - 1) % availableColors.length;
+      if (colorIndex === previousColorIndex) {
+        colorIndex = (colorIndex + 1) % availableColors.length;
+      }
+    }
+
+    return availableColors[colorIndex];
   }
 
   getBlockPosition(index: number): 'left' | 'right' {

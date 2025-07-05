@@ -1,3 +1,8 @@
+@import '../../../shared/styles/colors';
+
+// Si no funciona, intenta:
+// @import 'src/app/shared/styles/colors';
+
 .learning-block {
   position: relative;
   max-width: 280px;
@@ -25,23 +30,23 @@
     position: absolute;
     top: -8px;
     right: -8px;
-    background: #FF9800;
-    color: white;
+    background: $tertiary;
+    color: $white;
     padding: 6px 12px;
     border-radius: 20px;
     font-size: 12px;
     font-weight: 600;
     z-index: 2;
-    box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
+    box-shadow: 0 2px 8px rgba($tertiary, 0.3);
   }
 
   // Contenido principal
   .block-content {
-    background: white;
+    background: $white;
     border-radius: 20px;
     padding: 24px 20px 20px;
     text-align: center;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 25px rgba($black, 0.15);
     position: relative;
     overflow: hidden;
 
@@ -68,8 +73,8 @@
     margin: 0 auto 16px;
     font-size: 24px;
     font-weight: bold;
-    color: white;
-    border: 3px solid rgba(255, 255, 255, 0.3);
+    color: $white;
+    border: 3px solid rgba($white, 0.3);
     position: relative;
     z-index: 1;
   }
@@ -82,7 +87,7 @@
       font-size: 16px;
       font-weight: 600;
       margin: 0 0 8px 0;
-      color: white;
+      color: $white;
       position: relative;
       z-index: 1;
     }
@@ -90,7 +95,7 @@
     .block-subtitle {
       font-size: 12px;
       margin: 0;
-      color: rgba(255, 255, 255, 0.9);
+      color: rgba($white, 0.9);
       line-height: 1.4;
       position: relative;
       z-index: 1;
@@ -108,12 +113,12 @@
       width: 12px;
       height: 12px;
       border-radius: 50%;
-      background: rgba(255, 255, 255, 0.3);
+      background: rgba($white, 0.3);
       transition: all 0.3s ease;
 
       &.completed {
-        background: #FFD700;
-        box-shadow: 0 0 8px rgba(255, 215, 0, 0.5);
+        background: $yellow;
+        box-shadow: 0 0 8px rgba($yellow, 0.5);
       }
     }
   }
@@ -121,34 +126,52 @@
   // Texto de progreso
   .progress-text {
     font-size: 11px;
-    color: rgba(255, 255, 255, 0.9);
+    color: rgba($white, 0.9);
     font-weight: 500;
     position: relative;
     z-index: 1;
   }
 
-  // Colores por tipo de bloque
+  // Colores por estado usando design system
+  &.block-primary {
+    .block-content {
+      background: $primary;
+    }
+  }
+
+  &.block-secondary {
+    .block-content {
+      background: $secondary;
+    }
+  }
+
+  &.block-tertiary {
+    .block-content {
+      background: $tertiary;
+    }
+  }
+
   &.block-blue {
     .block-content {
-      background: #103F6C;
+      background: $blue;
     }
   }
 
   &.block-green {
     .block-content {
-      background: #0CB976;
+      background: $green;
     }
   }
 
-  &.block-coral {
+  &.block-success {
     .block-content {
-      background: #FF8D87;
+      background: $success;
     }
   }
 
-  &.block-gray {
+  &.block-locked {
     .block-content {
-      background: #828282;
+      background: lighten($black, 20%);
     }
 
     &:hover {
@@ -157,21 +180,9 @@
     }
   }
 
-  // Bloque especial (refuerzo)
-  &.special-block {
-    .block-circle {
-      font-size: 28px;
-      border-width: 4px;
-    }
-  }
-
   // Estado bloqueado
   &.locked {
     opacity: 0.7;
-
-    .block-content {
-      background: linear-gradient(135deg, #666 0%, #888 100%);
-    }
 
     &:hover {
       transform: none;
