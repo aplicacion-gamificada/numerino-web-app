@@ -3,29 +3,91 @@
 </button>
 
 <div class="container">
-    <h1 class="title">¡Bienvenido nuevamente!</h1>
-    <h2 class="subtitle">Ingresa para continuar tu aprendizaje divertido</h2>
+    <!-- Paso 1: Identificador -->
+    <div *ngIf="currentStep === 'identifier'" class="step-container">
+        <h1 class="title">¡Bienvenido nuevamente!</h1>
+        <h2 class="subtitle">Ingresa tu correo o nombre de usuario</h2>
 
-    <form [formGroup]="registrationForm" (ngSubmit)="handleSubmit()">
-        <div class="form-group">
-            <input type="text" class="form-input" placeholder="Correo o nombre de usuario" formControlName="username">
-        </div>
+        <form [formGroup]="identifierForm" (ngSubmit)="analyzeIdentifier()">
+            <div class="form-group">
+                <input 
+                    type="text" 
+                    class="form-input" 
+                    placeholder="Correo o nombre de usuario" 
+                    formControlName="identifier"
+                    [class.error]="identifier?.invalid && identifier?.touched">
+                <div *ngIf="identifier?.invalid && identifier?.touched" class="error-message">
+                    <span *ngIf="identifier?.errors?.['required']">Este campo es obligatorio</span>
+                    <span *ngIf="identifier?.errors?.['minlength']">Mínimo 3 caracteres</span>
+                </div>
+            </div>
 
-        <div class="form-group">
-            <input [type]="showPassword ? 'text' : 'password'" class="form-input" placeholder="Contraseña"
-                formControlName="password">
-            <button type="button" class="password-toggle" (click)="togglePassword()">
-                <i [class]="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+            <button 
+                type="submit" 
+                class="continue-button" 
+                [disabled]="!isIdentifierValid || isLoading"
+                [class.loading]="isLoading">
+                <span *ngIf="!isLoading">
+                    Continuar
+                    <span class="btn-arrow">→</span>
+                </span>
+                <span *ngIf="isLoading" class="loading-content">
+                    <div class="spinner"></div>
+                    Analizando...
+                </span>
             </button>
+        </form>
+    </div>
+
+    <!-- Paso 2: Contraseña -->
+    <div *ngIf="currentStep === 'password'" class="step-container">
+        <div class="user-info">
+            <div class="user-avatar">
+                <i class="pi pi-user"></i>
+            </div>
+            <div class="user-details">
+                <h3 class="user-identifier">{{ userIdentifier }}</h3>
+                <p class="user-type">{{ detectedUserType }}</p>
+            </div>
         </div>
 
-        <button type="submit" class="register-button" [disabled]="!registrationForm.valid">
-            Iniciar sesión
-            <span class="btn-arrow">→</span>
-        </button>
+        <h1 class="title">Ingresa tu contraseña</h1>
 
-        <p class="access-problem">
-            ¿Problemas para ingresar? Recupera tu <br>acceso <a href="#" class="access-here">aquí</a>
-        </p>
-    </form>
+        <form [formGroup]="passwordForm" (ngSubmit)="handleLogin()">
+            <div class="form-group">
+                <input 
+                    [type]="showPassword ? 'text' : 'password'" 
+                    class="form-input" 
+                    placeholder="Contraseña"
+                    formControlName="password"
+                    [class.error]="password?.invalid && password?.touched">
+                <button type="button" class="password-toggle" (click)="togglePassword()">
+                    <i [class]="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
+                </button>
+                <div *ngIf="password?.invalid && password?.touched" class="error-message">
+                    <span *ngIf="password?.errors?.['required']">La contraseña es obligatoria</span>
+                    <span *ngIf="password?.errors?.['minlength']">Mínimo 6 caracteres</span>
+                </div>
+            </div>
+
+            <button 
+                type="submit" 
+                class="login-button" 
+                [disabled]="!isPasswordValid || isLoading"
+                [class.loading]="isLoading">
+                <span *ngIf="!isLoading">
+                    Iniciar sesión
+                    <span class="btn-arrow">→</span>
+                </span>
+                <span *ngIf="isLoading" class="loading-content">
+                    <div class="spinner"></div>
+                    Iniciando sesión...
+                </span>
+            </button>
+
+            <p class="access-problem">
+                ¿Problemas para ingresar? Recupera tu <br>acceso <a href="#" class="access-here">aquí</a>
+            </p>
+        </form>
+    </div>
 </div>

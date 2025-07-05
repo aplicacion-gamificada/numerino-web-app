@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { LoginRequest, StudentLoginRequest } from '../models/login.model';
 import { ForgotPasswordRequest, RefreshTokenRequest, ResetPasswordRequest } from '../models/auth-aux.model';
 import { environment } from '../../environment/environment';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -59,5 +60,26 @@ export class AuthService {
 
   getStudentInfo(userId: string) {
     return this.http.get(`${this.baseUrl.replace('/auth', '')}/users/students/${userId}`);
+  }
+
+  // Método para verificar si un identificador es válido (simulado)
+  checkIdentifierAvailability(identifier: string): Observable<{exists: boolean, type: 'email' | 'username'}> {
+    // Simulación - en producción esto haría una llamada real al backend
+    const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
+    
+    return new Observable(observer => {
+      setTimeout(() => {
+        observer.next({
+          exists: true, // Siempre existe para la simulación
+          type: isEmail ? 'email' : 'username'
+        });
+        observer.complete();
+      }, 1000);
+    });
+  }
+
+  // Método para obtener información del dispositivo
+  getDeviceInfo(): string {
+    return `${navigator.platform} - ${navigator.appVersion}`;
   }
 }
