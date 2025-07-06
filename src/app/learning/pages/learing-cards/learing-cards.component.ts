@@ -1,9 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FriendsComponent } from "../../../layout/components/friends/friends.component";
 import { ProgressBarComponent } from "../../../layout/components/progress-bar/progress-bar.component";
 import { SidebarMenuComponent } from "../../../layout/components/sidebar-menu/sidebar-menu.component";
 import { LearningCard, LearningCardComponent } from "../../components/learning-card/learning-card.component";
+import { LearningService } from '../../services/learning.service';
+import { ProgressService, CurrentProgress } from '../../../progress/services/progress.service';
+import { UserService } from '../../../auth/services/user.service';
+import { AuthService } from '../../../auth/services/auth-services.service';
 
 interface Section {
   title: string;
@@ -16,109 +20,108 @@ interface Section {
   templateUrl: './learing-cards.component.html',
   styleUrl: './learing-cards.component.scss'
 })
-export class LearingCardsComponent {
- sections: Section[] = [];
+export class LearingCardsComponent implements OnInit {
+  sections: Section[] = [];
+  isLoading = true;
+  error: string | null = null;
+
+  constructor(
+    private learningService: LearningService,
+    private progressService: ProgressService,
+    private userService: UserService,
+    private authService: AuthService
+  ) {}
 
   ngOnInit() {
-    this.loadSections();
+    this.loadLearningData();
   }
 
-  private loadSections() {
-    // Simulando datos que luego vendrán de un servicio
-    this.sections = [
-      {
-        title: 'Resuelve problemas de gestión de datos e incertidumbre',
-        cards: [
-          {
-            id: 1,
-            title: 'Diferenciamos datos',
-            subtitle: 'Aprende a distinguir entre diferentes tipos de datos estadísticos',
-            exerciseCount: 10,
-            status: 'COMPLETADO',
-            points: 50
-          },
-          {
-            id: 2,
-            title: 'Organizamos datos en tablas y gráficos',
-            subtitle: 'Domina la organización y presentación visual de información',
-            exerciseCount: 8,
-            status: 'COMPLETADO',
-            points: 40
-          }
-        ]
-      },
-      {
-        title: 'Resuelve problemas de regularidad, equivalencia y cambio',
-        cards: [
-          {
-            id: 3,
-            title: 'Descubrimos patrones',
-            subtitle: 'Identifica y analiza patrones matemáticos en secuencias',
-            exerciseCount: 6,
-            status: 'COMPLETADO',
-            points: 30
-          }
-        ]
-      },
-      {
-        title: 'Resuelve problemas de cantidad',
-        cards: [
-          {
-            id: 4,
-            title: 'Comparamos cantidades usando esquemas',
-            subtitle: 'Utiliza representaciones gráficas para comparar magnitudes',
-            exerciseCount: 7,
-            status: 'COMPLETADO',
-            points: 35
-          },
-          {
-            id: 5,
-            title: 'Jugamos con los números',
-            subtitle: 'Explora propiedades y operaciones numéricas de forma lúdica',
-            exerciseCount: 9,
-            status: 'COMPLETADO',
-            points: 45
-          },
-          {
-            id: 6,
-            title: 'Calculamos para decidir',
-            subtitle: 'Aplica cálculos matemáticos en situaciones de toma de decisiones',
-            exerciseCount: 5,
-            status: 'EN PROCESO',
-            points: 25
-          }
-        ]
-      },
-      {
-        title: 'Resuelve problemas de forma, movimiento y localización',
-        cards: [
-          {
-            id: 7,
-            title: 'Identificamos la suma de los ángulos',
-            subtitle: 'Comprende las propiedades angulares en figuras geométricas',
-            exerciseCount: 0,
-            status: 'BLOQUEADO',
-            points: 0,
-            isBlocked: true
-          },
-          {
-            id: 8,
-            title: 'Conocemos los prisma rectos',
-            subtitle: 'Estudia las características y propiedades de los prismas',
-            exerciseCount: 0,
-            status: 'BLOQUEADO',
-            points: 0,
-            isBlocked: true
-          }
-        ]
+  private async loadLearningData() {
+    try {
+      this.isLoading = true;
+      this.error = null;
+
+      // Obtener el ID del usuario actual
+      const userId = this.authService.getUserId();
+      if (!userId) {
+        throw new Error('Usuario no autenticado');
       }
-    ];
+
+      // Obtener los datos del estudiante
+      const studentData = await this.userService.getStudentById(parseInt(userId)).toPromise();
+      if (!studentData?.studentProfileId) {
+        throw new Error('No se pudo obtener el perfil del estudiante');
+      }
+
+      // Obtener el progreso actual del estudiante
+      const currentProgress = await this.progressService.getCurrentProgress(studentData.studentProfileId).toPromise();
+      
+      if (currentProgress?.learningPath) {
+        await this.loadLearningPointsFromProgress(currentProgress);
+      } else {
+        // Si no hay progreso, mostrar contenido por defecto o crear learning path
+        this.sections = [];
+      }
+
+    } catch (error: any) {
+      console.error('Error cargando datos de aprendizaje:', error);
+      this.error = 'Error al cargar el contenido de aprendizaje. Por favor, intenta nuevamente.';
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  private async loadLearningPointsFromProgress(progress: CurrentProgress) {
+    try {
+      // Obtener los learning points de la unidad actual
+      const learningPoints = await this.learningService.getLearningPointsByUnit(progress.learningPath.unitsId).toPromise();
+      
+      if (learningPoints && learningPoints.length > 0) {
+        // Agrupar por unidad (por ahora solo tenemos una unidad)
+        const cards: LearningCard[] = learningPoints.map(point => {
+          const isCompleted = progress.completedLearningPoints >= point.sequenceOrder;
+          const isInProgress = progress.learningPath.currentLearningPointId === point.id;
+          const isBlocked = point.sequenceOrder > progress.completedLearningPoints + 1;
+
+          let status: 'COMPLETADO' | 'EN PROCESO' | 'BLOQUEADO';
+          if (isCompleted) {
+            status = 'COMPLETADO';
+          } else if (isInProgress) {
+            status = 'EN PROCESO';
+          } else {
+            status = 'BLOQUEADO';
+          }
+
+          return {
+            id: point.id,
+            title: point.title,
+            subtitle: point.description,
+            exerciseCount: point.exercisesCount || 0,
+            status: status,
+            points: isCompleted ? Math.round(point.difficultyWeight * 10) : 0,
+            isBlocked: isBlocked
+          };
+        });
+
+        this.sections = [
+          {
+            title: progress.learningPath.unitTitle || 'Contenido de Aprendizaje',
+            cards: cards
+          }
+        ];
+      }
+    } catch (error) {
+      console.error('Error cargando learning points:', error);
+      // Fallback: mantener la estructura vacía
+      this.sections = [];
+    }
   }
 
   onCardClick(card: LearningCard) {
     if (!card.isBlocked) {
       console.log('Navegando a la ficha:', card.title);
-      // Aquí iría la lógica de navegación
+      // Aquí iría la lógica de navegación a los ejercicios del learning point
+      // Por ejemplo: this.router.navigate(['/exercises', card.id]);
     }
   }
 

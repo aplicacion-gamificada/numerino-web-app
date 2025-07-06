@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { LoginRequest, StudentLoginRequest } from '../models/login.model';
 import { ForgotPasswordRequest, RefreshTokenRequest, ResetPasswordRequest } from '../models/auth-aux.model';
 import { environment } from '../../environment/environment';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -11,6 +11,7 @@ import { Observable } from 'rxjs';
 export class AuthService {
 
   private baseUrl = `${environment.apiUrl}/auth`;
+  private registerUrl = `${environment.apiUrl}/register`;
 
   private tokenKey = 'accessToken';
   private userIdKey = 'userId';
@@ -62,23 +63,34 @@ export class AuthService {
     return this.http.get(`${this.baseUrl.replace('/auth', '')}/users/students/${userId}`);
   }
 
-  // Método para verificar si un identificador es válido (simulado)
+  /**
+   * Verifica si un identificador (email o username) está disponible
+   */
   checkIdentifierAvailability(identifier: string): Observable<{exists: boolean, type: 'email' | 'username'}> {
-    // Simulación - en producción esto haría una llamada real al backend
     const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
     
-    return new Observable(observer => {
-      setTimeout(() => {
-        observer.next({
-          exists: true, // Siempre existe para la simulación
-          type: isEmail ? 'email' : 'username'
-        });
-        observer.complete();
-      }, 1000);
-    });
+    if (isEmail) {
+      return this.http.get<boolean>(`${this.registerUrl}/check-email?email=${encodeURIComponent(identifier)}`)
+        .pipe(
+          map(isAvailable => ({
+            exists: !isAvailable, // La API devuelve true si está disponible, nosotros queremos saber si existe
+            type: 'email' as const
+          }))
+        );
+    } else {
+      return this.http.get<boolean>(`${this.registerUrl}/check-username?username=${encodeURIComponent(identifier)}`)
+        .pipe(
+          map(isAvailable => ({
+            exists: !isAvailable, // La API devuelve true si está disponible, nosotros queremos saber si existe
+            type: 'username' as const
+          }))
+        );
+    }
   }
 
-  // Método para obtener información del dispositivo
+  /**
+   * Método para obtener información del dispositivo
+   */
   getDeviceInfo(): string {
     return `${navigator.platform} - ${navigator.appVersion}`;
   }

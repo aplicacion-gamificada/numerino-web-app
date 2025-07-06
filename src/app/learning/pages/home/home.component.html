@@ -29,19 +29,18 @@
                 <p>Cargando tu progreso...</p>
             </div>
 
-            <div *ngIf="error" class="error-state">
-                <p>{{ error }}</p>
+            <div *ngIf="hasError" class="error-state">
+                <p>{{ errorMessage }}</p>
                 <button (click)="loadStudentData()" class="retry-button">
                     Intentar de nuevo
                 </button>
             </div>
 
             <!-- Bloques de aprendizaje -->
-            <div class="blocks-path" *ngIf="!isLoading && !error">
-                <div class="connection-line"></div>
+            <div class="blocks-path" *ngIf="!isLoading && !hasError && learningBlocks.length > 0">
                 <div class="blocks-wrapper">
                     <app-bloque-card 
-                        *ngFor="let block of blocks; let i = index; trackBy: trackByBlock" 
+                        *ngFor="let block of learningBlocks; let i = index" 
                         [block]="block"
                         [position]="getBlockPosition(i)" 
                         (click)="onBlockClick(block)" 

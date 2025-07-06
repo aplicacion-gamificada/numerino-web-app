@@ -5,6 +5,8 @@
 
 .learning-block {
   position: relative;
+  width: 280px;
+  min-width: 280px;
   max-width: 280px;
   margin: 20px 0;
   cursor: pointer;
@@ -49,6 +51,12 @@
     box-shadow: 0 8px 25px rgba($black, 0.15);
     position: relative;
     overflow: hidden;
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 
     &::before {
       content: '';
@@ -90,6 +98,13 @@
       color: $white;
       position: relative;
       z-index: 1;
+      word-wrap: break-word;
+      hyphens: auto;
+      line-height: 1.2;
+      min-height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .block-subtitle {
@@ -160,6 +175,18 @@
   &.block-green {
     .block-content {
       background: $green;
+    }
+  }
+
+  &.block-yellow {
+    .block-content {
+      background: $yellow;
+    }
+  }
+
+  &.block-red {
+    .block-content {
+      background: $red;
     }
   }
 

@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { forkJoin, of } from 'rxjs';
-import { catchError, map, switchMap } from 'rxjs/operators';
+import { catchError, finalize, map, switchMap } from 'rxjs/operators';
 
 import { FriendsComponent } from "../../../layout/components/friends/friends.component";
 import { ProgressBarComponent } from "../../../layout/components/progress-bar/progress-bar.component";
@@ -10,21 +10,37 @@ import { LearningBlock, BloqueCardComponent } from '../../components/bloque-card
 import { AuthService } from '../../../auth/services/auth-services.service';
 import { UserService } from '../../../auth/services/user.service';
 import { StudentDetail } from '../../../auth/models/studentDetail.model';
-import { LearningService } from '../../services/learning.service';
+import { LearningService, AssignedSpecializationDto, SpecializationProgressDto, ModuleProgressDto } from '../../services/learning.service';
 import { ProgressService } from '../../../progress/services/progress.service';
+import { NextAchievementComponent } from '../../../layout/components/next-achievement/next-achievement.component';
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule, FriendsComponent, ProgressBarComponent, SidebarMenuComponent, BloqueCardComponent],
+  standalone: true,
+  imports: [
+    CommonModule,
+    FriendsComponent,
+    ProgressBarComponent,
+    SidebarMenuComponent,
+    BloqueCardComponent,
+    NextAchievementComponent
+  ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'
 })
-export class HomeComponent implements OnInit {
-  blocks: LearningBlock[] = [];
+export class HomeComponent implements OnInit, OnDestroy {
+  studentDetail: StudentDetail | null = null;
   studentName: string = '';
-  studentDetail?: StudentDetail;
-  isLoading = true;
-  error: string | null = null;
+  learningBlocks: LearningBlock[] = [];
+  currentProgress: number = 0;
+  totalBlocks: number = 0;
+  isLoading = false;
+  hasError = false;
+  errorMessage = '';
+
+  // Nuevas propiedades para los datos específicos del estudiante
+  assignedSpecialization: AssignedSpecializationDto | null = null;
+  specializationProgress: SpecializationProgressDto | null = null;
 
   constructor(
     private authService: AuthService,
@@ -33,148 +49,165 @@ export class HomeComponent implements OnInit {
     private progressService: ProgressService
   ) { }
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.loadStudentData();
+  }
+
+  ngOnDestroy(): void {
+    // Cleanup si es necesario
   }
 
   public loadStudentData() {
     this.isLoading = true;
+    this.hasError = false;
     
-    // Obtener perfil del estudiante
+    // Primero obtener el perfil del estudiante
     this.userService.getProfile().pipe(
       switchMap((student: StudentDetail) => {
         this.studentDetail = student;
         this.studentName = student.fullName;
         
-        // Obtener progreso actual y módulos en paralelo
+        // Ahora usar el studentProfileId real para obtener datos
         return forkJoin({
+          assignedSpecialization: this.learningService.getAssignedSpecialization(),
           currentProgress: this.progressService.getCurrentProgress(student.studentProfileId).pipe(
-            catchError(err => {
-              console.warn('No se pudo obtener el progreso:', err);
+            catchError((error) => {
+              console.warn('No se pudo obtener el progreso actual:', error);
               return of(null);
-            })
-          ),
-          modules: this.learningService.getModulesBySpecializationId(1).pipe( // Cambiar por especialización real
-            catchError(err => {
-              console.error('Error al cargar módulos:', err);
-              return of([]);
             })
           )
         });
       }),
-      catchError(err => {
-        console.error('Error al cargar datos del estudiante:', err);
-        this.error = 'No se pudieron cargar los datos del estudiante';
+      catchError((error) => {
+        console.error('Error loading student data:', error);
+        this.hasError = true;
+        this.errorMessage = 'Error al cargar los datos del estudiante';
+        return of(null);
+      }),
+      finalize(() => this.isLoading = false)
+    ).subscribe({
+      next: (data) => {
+        if (data && data.assignedSpecialization) {
+          this.assignedSpecialization = data.assignedSpecialization;
+          
+          // Obtener el progreso detallado de la especialización
+          this.loadSpecializationProgress(data.assignedSpecialization.specializationId);
+          
+          // Si hay progreso actual, también procesarlo
+          if (data.currentProgress) {
+            console.log('Progreso actual del estudiante:', data.currentProgress);
+          }
+        } else {
+          this.hasError = true;
+          this.errorMessage = 'No se pudo cargar la información del estudiante o no tiene una especialización asignada';
+        }
+      },
+      error: (error) => {
+        console.error('Error loading student data:', error);
+        this.hasError = true;
+        this.errorMessage = 'Error al cargar los datos del estudiante';
+      }
+    });
+  }
+
+  private loadSpecializationProgress(specializationId: number) {
+    this.learningService.getSpecializationProgress(specializationId).pipe(
+      catchError((error) => {
+        console.error('Error loading specialization progress:', error);
+        this.hasError = true;
+        this.errorMessage = 'Error al cargar el progreso de la especialización';
         return of(null);
       })
     ).subscribe({
-      next: (data) => {
-        if (data) {
-          this.processLearningData(data.modules, data.currentProgress);
+      next: (progress) => {
+        if (progress) {
+          this.specializationProgress = progress;
+          this.processSpecializationProgress(progress);
         }
-        this.isLoading = false;
       },
-      error: (err) => {
-        console.error('Error general:', err);
-        this.error = 'Error al cargar los datos';
-        this.isLoading = false;
+      error: (error) => {
+        console.error('Error loading specialization progress:', error);
+        this.hasError = true;
+        this.errorMessage = 'Error al cargar el progreso de la especialización';
       }
     });
   }
 
-  private processLearningData(modules: any[], currentProgress: any) {
-    this.blocks = modules.map((module, index) => {
-      // Determinar progreso del módulo
-      let completedLessons = 0;
-      let totalLessons = module.unitsCount || 0;
-      let status: 'completed' | 'in-progress' | 'locked' | 'recommended' = 'locked';
+  private processSpecializationProgress(progress: SpecializationProgressDto) {
+    // Actualizar estadísticas generales
+    this.currentProgress = progress.overallProgress;
+    this.totalBlocks = progress.totalModules;
 
-      if (currentProgress) {
-        // Lógica para determinar progreso basado en el learningPath
-        const moduleProgress = this.calculateModuleProgress(module, currentProgress);
-        completedLessons = moduleProgress.completed;
-        totalLessons = moduleProgress.total;
-        status = moduleProgress.status;
-      }
-
+    // Procesar módulos para crear bloques de aprendizaje
+    this.learningBlocks = progress.modules.map((module, index) => {
+      const status = this.getModuleStatus(module);
+      const color = this.getColorByStatus(status, index, progress.modules.length, module.moduleTitle);
+      
       return {
-        id: module.id,
+        id: module.moduleId,
         sequence: module.sequence,
-        title: module.title,
-        subtitle: this.getSubtitleFromStatus(status, module.status),
-        completedLessons,
-        totalLessons,
-        points: this.calculatePoints(completedLessons, totalLessons),
-        status,
-        color: this.getColorByStatus(status, index, modules.length)
-      } as LearningBlock;
-    });
-  }
-
-  private calculateModuleProgress(module: any, currentProgress: any) {
-    // Lógica para calcular el progreso real del módulo
-    // Basado en el learningPath y currentProgress
-    
-    if (!currentProgress.learningPath) {
-      return { completed: 0, total: module.unitsCount || 0, status: 'locked' as const };
-    }
-
-    const isCurrentModule = currentProgress.learningPath.unitTitle === module.title;
-    const completionPercentage = currentProgress.overallCompletionPercentage || 0;
-    
-    if (isCurrentModule) {
-      return {
-        completed: currentProgress.completedLessons || 0,
-        total: currentProgress.totalLessons || module.unitsCount || 0,
-        status: 'in-progress' as const
+        title: module.moduleTitle,
+        subtitle: this.getSubtitleFromStatus(status),
+        completedLessons: module.completedUnits,
+        totalLessons: module.totalUnits,
+        points: Math.round(module.progressPercentage),
+        status: this.mapStatusToBlockStatus(status),
+        color
       };
+    });
+
+    console.log('Processed learning blocks:', this.learningBlocks);
+  }
+
+  private getModuleStatus(module: ModuleProgressDto): 'active' | 'completed' | 'locked' | 'recommended' {
+    if (module.isCompleted) {
+      return 'completed';
+    } else if (module.isUnlocked) {
+      // Si está desbloqueado pero no completado, determinar si es recomendado o activo
+      const hasProgress = module.progressPercentage > 0;
+      return hasProgress ? 'active' : 'recommended';
+    } else {
+      return 'locked';
     }
-
-    // Lógica para determinar si está completado o bloqueado
-    return {
-      completed: completionPercentage >= 100 ? module.unitsCount || 0 : 0,
-      total: module.unitsCount || 0,
-      status: completionPercentage >= 100 ? 'completed' as const : 'locked' as const
-    };
   }
 
-  private calculatePoints(completed: number, total: number): number {
-    return Math.floor((completed / total) * 100);
-  }
-
-  private getSubtitleFromStatus(status: string, moduleStatus: number): string | undefined {
+  private getSubtitleFromStatus(status: 'active' | 'completed' | 'locked' | 'recommended'): string {
     switch (status) {
       case 'completed':
         return 'Completado';
-      case 'in-progress':
+      case 'active':
         return 'En progreso';
       case 'recommended':
         return 'Recomendado';
       case 'locked':
         return '¡Desbloquea este módulo!';
       default:
-        return undefined;
+        return '';
     }
   }
 
-  private getStatusFromCode(code: number): 'completed' | 'in-progress' | 'locked' | 'recommended' {
-    switch (code) {
-      case 1: return 'completed';
-      case 2: return 'in-progress';
-      case 3: return 'recommended';
-      case 4: return 'locked';
-      default: return 'locked';
+  private mapStatusToBlockStatus(status: 'active' | 'completed' | 'locked' | 'recommended'): 'completed' | 'in-progress' | 'locked' | 'recommended' {
+    switch (status) {
+      case 'active':
+        return 'in-progress';
+      case 'completed':
+        return 'completed';
+      case 'locked':
+        return 'locked';
+      case 'recommended':
+        return 'recommended';
+      default:
+        return 'locked';
     }
   }
 
-  private getColorByStatus(status: string, index: number, totalModules: number): 'primary' | 'secondary' | 'tertiary' | 'blue' | 'green' | 'success' | 'locked' {
-    // Colores disponibles del design system
-    const availableColors: ('primary' | 'secondary' | 'tertiary' | 'blue' | 'green')[] = [
-      'primary',    // #2EC3ED - Azul principal
-      'secondary',  // #324861 - Azul oscuro
-      'tertiary',   // #FA9A1D - Naranja
-      'blue',       // #2CBAE6 - Azul claro
-      'green'       // #74DEDD - Verde agua
+  private getColorByStatus(status: string, index: number, totalModules: number, moduleName?: string): 'primary' | 'secondary' | 'tertiary' | 'blue' | 'green' | 'yellow' | 'red' | 'success' | 'locked' {
+    // BRAND COLORS del design system (_colors.scss)
+    const brandColors: ('blue' | 'yellow' | 'red' | 'green')[] = [
+      'blue',    // #2CBAE6 - Azul
+      'yellow',  // #FFD33A - Amarillo  
+      'red',     // #FF817C - Rojo
+      'green'    // #74DEDD - Verde
     ];
 
     // Si el bloque está completado, siempre usar success (verde)
@@ -187,19 +220,28 @@ export class HomeComponent implements OnInit {
       return 'locked';
     }
 
-    // Para bloques activos o recomendados, usar rotación inteligente
-    // Evitar repetición de colores contiguos
-    let colorIndex = index % availableColors.length;
+    // Para bloques activos o recomendados, usar asignación basada en el nombre del módulo
+    // Esto evita que siempre se repita el mismo patrón de colores
+    const colorIndex = this.getColorIndexFromModuleName(moduleName || `module-${index}`, brandColors.length);
     
-    // Si hay más de un módulo, asegurar que no se repita el color del anterior
-    if (totalModules > 1 && index > 0) {
-      const previousColorIndex = (index - 1) % availableColors.length;
-      if (colorIndex === previousColorIndex) {
-        colorIndex = (colorIndex + 1) % availableColors.length;
-      }
-    }
+    return brandColors[colorIndex] as 'primary' | 'secondary' | 'tertiary' | 'blue' | 'green' | 'yellow' | 'red' | 'success' | 'locked';
+  }
 
-    return availableColors[colorIndex];
+  /**
+   * Genera un índice de color basado en el nombre del módulo
+   * Usa un hash simple para asegurar consistencia pero variedad
+   */
+  private getColorIndexFromModuleName(moduleName: string, totalColors: number): number {
+    // Crear un hash simple del nombre del módulo
+    let hash = 0;
+    for (let i = 0; i < moduleName.length; i++) {
+      const char = moduleName.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash = hash & hash; // Convertir a entero de 32 bits
+    }
+    
+    // Asegurar que el hash sea positivo y dentro del rango de colores
+    return Math.abs(hash) % totalColors;
   }
 
   getBlockPosition(index: number): 'left' | 'right' {
@@ -207,14 +249,36 @@ export class HomeComponent implements OnInit {
   }
 
   onBlockClick(block: LearningBlock) {
-    if (block.status !== 'locked') {
-      console.log('Navegando al bloque:', block.title);
-      // Implementar navegación a las fichas (units) del módulo
-      // this.router.navigate(['/learning/module', block.id]);
+    console.log(`Clicked on block: ${block.title}`, block);
+    
+    // Solo permitir navegación si el bloque está desbloqueado
+    if (block.status === 'locked') {
+      console.log('Block is locked, cannot navigate');
+      return;
     }
+
+    // Navegar al módulo correspondiente
+    // TODO: Implementar navegación a la vista de unidades del módulo
+    console.log(`Navigating to module ${block.id}`);
   }
 
-  trackByBlock(index: number, block: LearningBlock): number {
-    return block.id;
+  getProgressText(): string {
+    if (!this.specializationProgress) return 'Cargando...';
+    
+    const completedModules = this.specializationProgress.completedModules;
+    const totalModules = this.specializationProgress.totalModules;
+    
+    return `${completedModules} de ${totalModules} módulos completados`;
+  }
+
+  getSpecializationTitle(): string {
+    return this.assignedSpecialization?.specializationTitle || 'Cargando especialización...';
+  }
+
+  getNextRecommendation(): string {
+    if (!this.specializationProgress?.nextLearningItem) return '';
+    
+    const nextItem = this.specializationProgress.nextLearningItem;
+    return `Próximo: ${nextItem.itemTitle}`;
   }
 }

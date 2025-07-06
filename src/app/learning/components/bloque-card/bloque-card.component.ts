@@ -10,7 +10,7 @@ export interface LearningBlock {
   totalLessons: number;
   points?: number;
   status: 'completed' | 'in-progress' | 'locked' | 'recommended';
-  color: 'primary' | 'secondary' | 'tertiary' | 'blue' | 'green' | 'success' | 'locked';
+  color: 'primary' | 'secondary' | 'tertiary' | 'blue' | 'green' | 'yellow' | 'red' | 'success' | 'locked';
 }
 
 @Component({
@@ -37,13 +37,16 @@ export class BloqueCardComponent {
   }
 
   getBlockClass(): string {
-    const classes = [`block-${this.block.color}`, `position-${this.position}`];
+    const classes = ['learning-block', `block-${this.block.color}`, `position-${this.position}`];
 
     if (this.block.status === 'locked') {
       classes.push('locked');
     }
 
-    return classes.join(' ');
+    const finalClasses = classes.join(' ');
+    console.log(`Bloque ${this.block.title}: classes=${finalClasses}, color=${this.block.color}, status=${this.block.status}`);
+    
+    return finalClasses;
   }
 
   getDisplayNumber(): string {
@@ -53,13 +56,12 @@ export class BloqueCardComponent {
   getProgressText(): string {
     switch (this.block.status) {
       case 'completed':
-        return `${this.block.completedLessons}/${this.block.totalLessons} Completados`;
       case 'in-progress':
         return `${this.block.completedLessons}/${this.block.totalLessons} Completados`;
       case 'recommended':
-        return 'Recomendado';
+        return 'Sin iniciar';
       case 'locked':
-        return '¡Desbloquea este módulo!';
+        return '';
       default:
         return '';
     }

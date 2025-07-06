@@ -66,12 +66,8 @@ export class LoginComponent implements OnInit {
   }
 
   private async simulateAnalysis(): Promise<void> {
-    // Simular análisis con delay
-    return new Promise(resolve => {
-      setTimeout(() => {
-        resolve();
-      }, 1500);
-    });
+    // Ya no necesitamos simular análisis, los datos vienen directamente de la API
+    return Promise.resolve();
   }
 
   private detectIdentifierType(identifier: string): 'email' | 'username' {
