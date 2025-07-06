@@ -1,0 +1,172 @@
+<div class="demo-container">
+  <div class="demo-header">
+    <button class="back-button" (click)="goBack()">
+      ← Volver al Inicio
+    </button>
+    <h1 class="demo-title">Ejercicios Interactivos - Demo</h1>
+    <p class="demo-subtitle">Selecciona un ejercicio para practicar</p>
+  </div>
+
+  <!-- Ejercicios de Gráficos Interactivos -->
+  <div class="exercise-category">
+    <h2 class="category-title">📊 Gráficos Interactivos</h2>
+    <div class="exercise-grid">
+      <div 
+        *ngFor="let config of chartExerciseConfigs" 
+        class="exercise-card"
+        (click)="navigateToChartExercise(config)"
+      >
+      <div class="card-header">
+        <h3 class="card-title">{{ config.title }}</h3>
+        <div class="card-badges">
+          <span class="badge badge-primary" *ngIf="config.allowTableEdit">Editable</span>
+          <span class="badge badge-secondary" *ngIf="config.showAdultsFilter">Filtro</span>
+          <span class="badge badge-success" *ngIf="config.correctAnswers">Validación</span>
+        </div>
+      </div>
+      
+      <div class="card-content">
+        <p class="card-instructions">{{ config.instructions }}</p>
+        
+        <div class="chart-preview">
+          <div class="preview-bars">
+            <div 
+              *ngFor="let value of config.chartData.values; let i = index" 
+              class="preview-bar"
+              [style.height.%]="(value / config.chartData.maxValue) * 100"
+              [style.background-color]="config.chartData.colors[i]"
+            ></div>
+          </div>
+          <div class="preview-labels">
+            <span 
+              *ngFor="let category of config.chartData.categories" 
+              class="preview-label"
+            >
+              {{ category }}
+            </span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="card-footer">
+        <div class="data-info">
+          <span class="data-count">{{ config.chartData.categories.length }} categorías</span>
+          <span class="max-value">Máximo: {{ config.chartData.maxValue }}</span>
+        </div>
+        <div class="play-button">
+          <span class="play-icon">▶</span>
+          <span class="play-text">Practicar</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ejercicios de Análisis de Secuencias -->
+  <div class="exercise-category">
+    <h2 class="category-title">🔢 Análisis de Secuencias</h2>
+    <div class="exercise-grid">
+      <div 
+        *ngFor="let config of sequenceExerciseConfigs" 
+        class="exercise-card sequence-card"
+        (click)="navigateToSequenceExercise(config)"
+      >
+        <div class="card-header">
+          <h3 class="card-title">{{ config.title }}</h3>
+          <div class="card-badges">
+            <span class="badge badge-primary" *ngIf="config.allowInput">Editable</span>
+            <span class="badge badge-secondary" *ngIf="config.showFormula">Fórmula</span>
+            <span class="badge badge-success" *ngIf="config.correctAnswers">Validación</span>
+          </div>
+        </div>
+        
+        <div class="card-content">
+          <p class="card-instructions">{{ config.instructions }}</p>
+          
+          <div class="sequence-preview">
+            <div class="sequence-values">
+              <span 
+                *ngFor="let value of config.initialSequence" 
+                class="sequence-value"
+              >
+                {{ value }}
+              </span>
+              <span class="sequence-dots">...</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-footer">
+          <div class="data-info">
+            <span class="data-count">{{ config.initialSequence.length }} valores iniciales</span>
+            <span class="predictions-count">{{ config.targetPredictions }} predicciones</span>
+          </div>
+          <div class="play-button">
+            <span class="play-icon">▶</span>
+            <span class="play-text">Analizar</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Ejercicios de Probabilidad -->
+  <div class="exercise-category">
+    <h2 class="category-title">🎲 Simulador de Probabilidades</h2>
+    <div class="exercise-grid">
+      <div 
+        *ngFor="let config of probabilityExerciseConfigs" 
+        class="exercise-card probability-card"
+        (click)="navigateToProbabilityExercise(config)"
+      >
+        <div class="card-header">
+          <h3 class="card-title">{{ config.title }}</h3>
+          <div class="card-badges">
+            <span class="badge badge-primary" *ngIf="config.allowColorChange">Editable</span>
+            <span class="badge badge-secondary" *ngIf="config.questionType === 'probability'">Probabilidad</span>
+            <span class="badge badge-info">{{ config.simulationRounds }} simulaciones</span>
+          </div>
+        </div>
+        
+        <div class="card-content">
+          <p class="card-instructions">{{ config.instructions }}</p>
+          
+          <div class="probability-preview">
+            <div class="sphere-preview">
+              <div class="preview-box">
+                <div 
+                  *ngFor="let color of config.sphereColors; let i = index" 
+                  class="preview-sphere"
+                  [style.background-color]="color"
+                  [style.left.%]="getSpherePosition(i).x"
+                  [style.top.%]="getSpherePosition(i).y"
+                ></div>
+              </div>
+            </div>
+            
+            <div class="color-distribution">
+              <div class="distribution-item" *ngFor="let colorName of getUniqueColors(config.colorNames)">
+                <div 
+                  class="color-dot"
+                  [style.background-color]="getColorByName(config, colorName)"
+                ></div>
+                <span class="color-label">{{ colorName }}</span>
+                <span class="color-count">{{ getColorCount(config.colorNames, colorName) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="card-footer">
+          <div class="data-info">
+            <span class="data-count">6 esferas</span>
+            <span class="simulation-count">{{ config.simulationRounds }} simulaciones</span>
+          </div>
+          <div class="play-button">
+            <span class="play-icon">🎲</span>
+            <span class="play-text">Simular</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div> 

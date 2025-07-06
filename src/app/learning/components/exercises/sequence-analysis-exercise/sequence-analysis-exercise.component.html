@@ -1,0 +1,187 @@
+<div class="exercise-container">
+  <!-- Header del ejercicio -->
+  <div class="exercise-header">
+    <button class="back-button" (click)="goBack()">
+      ← Volver
+    </button>
+    <h1 class="exercise-title">{{ config.title }}</h1>
+    <p class="exercise-instructions">{{ config.instructions }}</p>
+  </div>
+
+  <!-- Contenido principal -->
+  <div class="exercise-content">
+    <!-- Sección de entrada de secuencia -->
+    <div class="input-section">
+      <h3 class="section-title">Secuencia de Números</h3>
+      
+      <div class="sequence-input-container">
+        <label class="input-label">Ingresa la secuencia (separada por comas):</label>
+        <input 
+          type="text" 
+          [(ngModel)]="userInput"
+          (input)="onSequenceInputChange()"
+          [disabled]="!config.allowInput"
+          class="sequence-input"
+          placeholder="2, 5, 8, 11, 14"
+        />
+      </div>
+
+      <div class="sequence-display">
+        <div class="sequence-values">
+          <span 
+            *ngFor="let value of sequenceData.values; let i = index" 
+            class="sequence-value"
+            [style.animation-delay.ms]="i * 100"
+          >
+            {{ value }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Visualización del gráfico -->
+    <div class="visualization-section">
+      <h3 class="section-title">Visualización de la Secuencia</h3>
+      <div class="canvas-container">
+        <canvas #sequenceCanvas class="sequence-canvas"></canvas>
+      </div>
+    </div>
+
+    <!-- Botón de análisis -->
+    <div class="analysis-trigger" *ngIf="!showAnalysis && !isAnalyzing">
+      <button class="analyze-button" (click)="startAnalysis()">
+        🔍 Analizar Secuencia
+      </button>
+    </div>
+
+    <!-- Estado de análisis -->
+    <div class="analyzing-state" *ngIf="isAnalyzing">
+      <div class="analyzer-spinner"></div>
+      <p>Analizando patrón matemático...</p>
+    </div>
+
+    <!-- Resultados del análisis -->
+    <div class="analysis-results" *ngIf="showAnalysis">
+      <h3 class="section-title">Análisis del Patrón</h3>
+      
+      <div class="pattern-info">
+        <div class="pattern-type">
+          <span class="pattern-label">Tipo de Secuencia:</span>
+          <span class="pattern-value" [class]="'pattern-' + sequenceData.type">
+            {{ getPatternTypeName(sequenceData.type) }}
+          </span>
+        </div>
+
+        <div class="pattern-details" *ngIf="sequenceData.type !== 'unknown'">
+          <div class="detail-item" *ngIf="sequenceData.commonDifference !== undefined">
+            <span class="detail-label">Diferencia Común:</span>
+            <span class="detail-value">{{ sequenceData.commonDifference }}</span>
+          </div>
+          
+          <div class="detail-item" *ngIf="sequenceData.commonRatio !== undefined">
+            <span class="detail-label">Razón Común:</span>
+            <span class="detail-value">{{ sequenceData.commonRatio }}</span>
+          </div>
+          
+          <div class="detail-item" *ngIf="config.showFormula && sequenceData.formula">
+            <span class="detail-label">Fórmula:</span>
+            <span class="detail-value formula">{{ sequenceData.formula }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botón para mostrar predicciones -->
+      <div class="prediction-trigger" *ngIf="!showPredictions">
+        <button class="predict-button" (click)="showPredictionSection()">
+          🎯 Hacer Predicciones
+        </button>
+      </div>
+    </div>
+
+    <!-- Sección de predicciones -->
+    <div class="predictions-section" *ngIf="showPredictions">
+      <h3 class="section-title">Predicciones</h3>
+      
+      <div class="predictions-container">
+        <div class="prediction-inputs">
+          <div 
+            *ngFor="let prediction of userPredictions; let i = index" 
+            class="prediction-input-group"
+          >
+            <label class="prediction-label">
+              Siguiente {{ i + 1 }}:
+            </label>
+                         <input 
+               type="number" 
+               [value]="prediction"
+               (input)="onPredictionInputChange($event, i)"
+               class="prediction-input"
+               placeholder="?"
+             />
+            <span 
+              *ngIf="sequenceData.nextValues && sequenceData.nextValues[i] !== undefined" 
+              class="predicted-value"
+              [class.show-hint]="showHints"
+            >
+              ({{ sequenceData.nextValues[i] }})
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sección de pistas -->
+    <div class="hints-section" *ngIf="config.hints && config.hints.length > 0">
+      <button class="hint-button" (click)="showHint()" [disabled]="currentHintIndex >= config.hints.length">
+        💡 Pista ({{ currentHintIndex }}/{{ config.hints.length }})
+      </button>
+      
+      <div class="hints-container" *ngIf="showHints">
+        <div 
+          *ngFor="let hint of config.hints.slice(0, currentHintIndex)" 
+          class="hint-item"
+        >
+          <span class="hint-icon">💡</span>
+          <span class="hint-text">{{ hint }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feedback -->
+  <div class="feedback-section" *ngIf="showFeedback">
+    <div class="feedback-card" [class.correct]="isCorrect" [class.incorrect]="!isCorrect">
+      <div class="feedback-icon">
+        <span *ngIf="isCorrect">✓</span>
+        <span *ngIf="!isCorrect">✗</span>
+      </div>
+      <p class="feedback-message">{{ feedbackMessage }}</p>
+    </div>
+  </div>
+
+  <!-- Botones de acción -->
+  <div class="action-buttons">
+    <button 
+      class="btn btn-secondary" 
+      (click)="resetExercise()"
+    >
+      Reiniciar
+    </button>
+    
+    <button 
+      class="btn btn-primary" 
+      (click)="checkAnswer()"
+      [disabled]="showFeedback || !showPredictions"
+    >
+      Verificar Respuesta
+    </button>
+    
+    <button 
+      *ngIf="isCompleted" 
+      class="btn btn-success" 
+      (click)="continueToNext()"
+    >
+      Continuar
+    </button>
+  </div>
+</div> 

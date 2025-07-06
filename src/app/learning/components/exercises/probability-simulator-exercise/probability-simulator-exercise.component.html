@@ -1,0 +1,208 @@
+<div class="exercise-container">
+  <!-- Header del ejercicio -->
+  <div class="exercise-header">
+    <button class="back-button" (click)="goBack()">
+      ← Volver
+    </button>
+    <h1 class="exercise-title">{{ config.title }}</h1>
+    <p class="exercise-instructions">{{ config.instructions }}</p>
+  </div>
+
+  <!-- Contenido principal -->
+  <div class="exercise-content">
+    <!-- Caja de esferas -->
+    <div class="sphere-container">
+      <h3 class="section-title">Caja de Esferas</h3>
+      
+      <div class="sphere-box">
+        <div 
+          *ngFor="let sphere of spheres" 
+          class="sphere"
+          [style.left.%]="sphere.position.x"
+          [style.top.%]="sphere.position.y"
+          [style.background-color]="sphere.color"
+          [class.extracted]="extractedSphere?.id === sphere.id"
+          [class.clickable]="config.allowColorChange && !isSimulating"
+          (click)="onSphereClick(sphere)"
+          [title]="getColorName(sphere.color)"
+        >
+          <div class="sphere-highlight"></div>
+          <div class="sphere-shadow"></div>
+        </div>
+        
+        <!-- Indicador de extracción -->
+        <div class="extraction-indicator" *ngIf="isExtracting">
+          <div class="extraction-hand">👋</div>
+          <div class="extraction-text">Extrayendo...</div>
+        </div>
+      </div>
+
+      <!-- Instrucciones de interacción -->
+      <div class="interaction-hint" *ngIf="config.allowColorChange && !isSimulating">
+        <span class="hint-icon">💡</span>
+        <span class="hint-text">Haz clic en las esferas para cambiar sus colores</span>
+      </div>
+    </div>
+
+    <!-- Panel de cálculos -->
+    <div class="calculations-panel">
+      <h3 class="section-title">Análisis de Probabilidades</h3>
+      
+      <!-- Conteo de colores -->
+      <div class="color-counts">
+        <h4 class="subsection-title">Distribución de Colores</h4>
+        <div class="color-count-grid">
+          <div 
+            *ngFor="let colorName of Object.keys(probabilityData.colorCounts)" 
+            class="color-count-item"
+            [class.selected]="selectedColorForQuestion === colorName"
+            (click)="onColorSelection(colorName)"
+          >
+            <div 
+              class="color-indicator"
+              [style.background-color]="getColorByName(colorName)"
+            ></div>
+            <span class="color-name">{{ colorName }}</span>
+            <span class="color-count">{{ probabilityData.colorCounts[colorName] }}</span>
+            <span class="color-probability">
+              {{ (probabilityData.probabilities[colorName] * 100).toFixed(1) }}%
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pregunta de probabilidad -->
+      <div class="probability-question" *ngIf="config.questionType === 'probability'">
+        <h4 class="subsection-title">Pregunta</h4>
+        <div class="question-content">
+          <p class="question-text">
+            ¿Cuál es la probabilidad de extraer una esfera 
+            <span class="selected-color" *ngIf="selectedColorForQuestion">{{ selectedColorForQuestion }}</span>
+            <span class="no-selection" *ngIf="!selectedColorForQuestion">(selecciona un color)</span>?
+          </p>
+          
+          <div class="answer-input">
+            <label class="input-label">Tu respuesta (como decimal, ej: 0.33):</label>
+            <input 
+              type="number" 
+              step="0.01" 
+              min="0" 
+              max="1"
+              [value]="userProbabilityAnswer"
+              (input)="onInputChange($event)"
+              class="probability-input"
+              placeholder="0.00"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel de simulación -->
+    <div class="simulation-panel">
+      <h3 class="section-title">Simulación</h3>
+      
+      <div class="simulation-controls">
+        <button 
+          class="simulate-button"
+          (click)="startSimulation()"
+          [disabled]="!selectedColorForQuestion || isSimulating"
+        >
+          <span *ngIf="!isSimulating">🎲 Simular {{ config.simulationRounds }} Extracciones</span>
+          <span *ngIf="isSimulating">⏳ Simulando... ({{ currentSimulationRound }}/{{ config.simulationRounds }})</span>
+        </button>
+      </div>
+
+      <!-- Progreso de simulación -->
+      <div class="simulation-progress" *ngIf="isSimulating">
+        <div class="progress-bar">
+          <div 
+            class="progress-fill"
+            [style.width.%]="(currentSimulationRound / (config.simulationRounds || 10)) * 100"
+          ></div>
+        </div>
+        <p class="progress-text">
+          Extracción {{ currentSimulationRound }} de {{ config.simulationRounds }}
+        </p>
+      </div>
+
+      <!-- Resultados de simulación -->
+      <div class="simulation-results" *ngIf="showResults">
+        <h4 class="subsection-title">Resultados de la Simulación</h4>
+        
+        <div class="results-summary">
+          <div class="summary-item">
+            <span class="summary-label">Extracciones exitosas:</span>
+            <span class="summary-value success">
+              {{ getSuccessfulExtractions().length }}/{{ simulationResults.length }}
+            </span>
+          </div>
+          
+          <div class="summary-item">
+            <span class="summary-label">Tasa de éxito:</span>
+            <span class="summary-value">{{ getSuccessRate().toFixed(1) }}%</span>
+          </div>
+          
+          <div class="summary-item">
+            <span class="summary-label">Probabilidad teórica:</span>
+            <span class="summary-value theoretical">{{ getTheoreticalProbability().toFixed(1) }}%</span>
+          </div>
+        </div>
+
+        <!-- Historial de extracciones -->
+        <div class="extraction-history">
+          <h5 class="history-title">Historial de Extracciones</h5>
+          <div class="history-grid">
+            <div 
+              *ngFor="let result of simulationResults" 
+              class="history-item"
+              [class.correct]="result.wasCorrect"
+              [class.incorrect]="!result.wasCorrect"
+            >
+              <span class="attempt-number">{{ result.attempt }}</span>
+              <span class="extracted-color">{{ result.extractedColor }}</span>
+              <span class="result-icon">{{ result.wasCorrect ? '✓' : '✗' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feedback -->
+  <div class="feedback-section" *ngIf="showFeedback">
+    <div class="feedback-card" [class.correct]="isCorrect" [class.incorrect]="!isCorrect">
+      <div class="feedback-icon">
+        <span *ngIf="isCorrect">✓</span>
+        <span *ngIf="!isCorrect">✗</span>
+      </div>
+      <p class="feedback-message">{{ feedbackMessage }}</p>
+    </div>
+  </div>
+
+  <!-- Botones de acción -->
+  <div class="action-buttons">
+    <button 
+      class="btn btn-secondary" 
+      (click)="resetExercise()"
+    >
+      Reiniciar
+    </button>
+    
+    <button 
+      class="btn btn-primary" 
+      (click)="checkAnswer()"
+      [disabled]="showFeedback || !selectedColorForQuestion"
+    >
+      Verificar Respuesta
+    </button>
+    
+    <button 
+      *ngIf="isCompleted" 
+      class="btn btn-success" 
+      (click)="continueToNext()"
+    >
+      Continuar
+    </button>
+  </div>
+</div> 

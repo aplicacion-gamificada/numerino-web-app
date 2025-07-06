@@ -1,0 +1,112 @@
+<div class="exercise-container">
+  <!-- Header del ejercicio -->
+  <div class="exercise-header">
+    <button class="back-button" (click)="goBack()">
+      ← Volver
+    </button>
+    <h1 class="exercise-title">{{ config.title }}</h1>
+    <p class="exercise-instructions">{{ config.instructions }}</p>
+  </div>
+
+  <!-- Contenido principal -->
+  <div class="exercise-content">
+    <!-- Canvas del gráfico -->
+    <div class="chart-section">
+      <div class="chart-container">
+        <canvas #chartCanvas class="chart-canvas"></canvas>
+      </div>
+      
+      <!-- Filtro de adultos (si está habilitado) -->
+      <div class="filter-section" *ngIf="config.showAdultsFilter">
+        <label class="filter-label">
+          <input 
+            type="checkbox" 
+            [(ngModel)]="showAdultsOnly" 
+            (change)="onAdultsFilterChange()"
+            class="filter-checkbox"
+          />
+          <span class="filter-text">Mostrar solo adultos</span>
+        </label>
+      </div>
+    </div>
+
+    <!-- Tabla de datos -->
+    <div class="data-section">
+      <h3 class="data-title">Datos del Gráfico</h3>
+      <div class="data-table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Categoría</th>
+              <th>Valor</th>
+              <th>Color</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let category of config.chartData.categories; let i = index">
+              <td class="category-cell">{{ category }}</td>
+              <td class="value-cell">
+                <input 
+                  *ngIf="config.allowTableEdit; else readOnlyValue"
+                  type="number" 
+                  [value]="config.chartData.values[i]"
+                  (input)="onInputChange($event, i)"
+                  min="0" 
+                  [max]="config.chartData.maxValue"
+                  class="value-input"
+                />
+                <ng-template #readOnlyValue>
+                  <span class="value-display">{{ config.chartData.values[i] }}</span>
+                </ng-template>
+              </td>
+              <td class="color-cell">
+                <div 
+                  class="color-indicator" 
+                  [style.background-color]="config.chartData.colors[i]"
+                ></div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Feedback y controles -->
+  <div class="feedback-section" *ngIf="showFeedback">
+    <div class="feedback-card" [class.correct]="isCorrect" [class.incorrect]="!isCorrect">
+      <div class="feedback-icon">
+        <span *ngIf="isCorrect">✓</span>
+        <span *ngIf="!isCorrect">✗</span>
+      </div>
+      <p class="feedback-message">{{ feedbackMessage }}</p>
+    </div>
+  </div>
+
+  <!-- Botones de acción -->
+  <div class="action-buttons">
+    <button 
+      class="btn btn-secondary" 
+      (click)="resetExercise()"
+      [disabled]="!showFeedback && !isCompleted"
+    >
+      Reiniciar
+    </button>
+    
+    <button 
+      class="btn btn-primary" 
+      (click)="checkAnswer()"
+      [disabled]="showFeedback"
+    >
+      Verificar Respuesta
+    </button>
+    
+    <button 
+      *ngIf="isCompleted" 
+      class="btn btn-success" 
+      (click)="continueToNext()"
+    >
+      Continuar
+    </button>
+  </div>
+</div> 

@@ -260,4 +260,8 @@ export class HomeComponent implements OnInit, OnDestroy {
   trackByBlockId(index: number, block: LearningBlock): number {
     return block.id;
   }
+
+  goToExerciseDemo(): void {
+    this.router.navigate(['/learning/exercises/demo']);
+  }
 }

@@ -10,6 +10,10 @@ import { StudentProgressComponent } from './progress/components/student-progress
 import { StudentClassroomComponent } from './classroom/components/student-classroom/student-classroom.component';
 import { LearingCardsComponent } from './learning/pages/learing-cards/learing-cards.component';
 import { UnitLearningPointsComponent } from './learning/pages/unit-learning-points/unit-learning-points.component';
+import { InteractiveChartExerciseComponent } from './learning/components/exercises/interactive-chart-exercise/interactive-chart-exercise.component';
+import { SequenceAnalysisExerciseComponent } from './learning/components/exercises/sequence-analysis-exercise/sequence-analysis-exercise.component';
+import { ProbabilitySimulatorExerciseComponent } from './learning/components/exercises/probability-simulator-exercise/probability-simulator-exercise.component';
+import { ExerciseDemoComponent } from './learning/components/exercises/exercise-demo/exercise-demo.component';
 
 
 export const routes: Routes = [
@@ -43,6 +47,10 @@ export const routes: Routes = [
         component: HomeComponent
     },
     {
+        path: 'learning/home',
+        component: HomeComponent
+    },
+    {
         path: 'achievements',
         component: AchievementComponent
     },
@@ -65,6 +73,38 @@ export const routes: Routes = [
     {
         path: 'learning/unit/:unitId',
         component: UnitLearningPointsComponent
+    },
+    {
+        path: 'exercise/interactive-chart',
+        component: InteractiveChartExerciseComponent
+    },
+    {
+        path: 'exercise/interactive-chart/:exerciseId',
+        component: InteractiveChartExerciseComponent
+    },
+    {
+        path: 'exercise/sequence-analysis',
+        component: SequenceAnalysisExerciseComponent
+    },
+    {
+        path: 'exercise/sequence-analysis/:exerciseId',
+        component: SequenceAnalysisExerciseComponent
+    },
+    {
+        path: 'exercise/probability-simulator',
+        component: ProbabilitySimulatorExerciseComponent
+    },
+    {
+        path: 'exercise/probability-simulator/:exerciseId',
+        component: ProbabilitySimulatorExerciseComponent
+    },
+    {
+        path: 'learning/exercises/demo',
+        component: ExerciseDemoComponent
+    },
+    {
+        path: 'exercise-demo',
+        component: ExerciseDemoComponent
     }
 
 ];

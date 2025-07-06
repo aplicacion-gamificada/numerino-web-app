@@ -1,0 +1,610 @@
+// Variables de colores
+$primary-color: #4A90E2;
+$secondary-color: #7ED321;
+$accent-color: #FFB366;
+$error-color: #FF6B6B;
+$success-color: #4CAF50;
+$warning-color: #FFC107;
+$background-color: #F8F9FA;
+$text-color: #2C3E50;
+$border-color: #E1E8ED;
+$shadow-color: rgba(0, 0, 0, 0.1);
+
+// Mixins
+@mixin card-style {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px $shadow-color;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+@mixin button-style($bg-color, $text-color: white) {
+  background: $bg-color;
+  color: $text-color;
+  border: none;
+  border-radius: 8px;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba($bg-color, 0.3);
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+}
+
+// Contenedor principal
+.exercise-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 1rem;
+  
+  @media (min-width: 768px) {
+    padding: 2rem;
+  }
+}
+
+// Header del ejercicio
+.exercise-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  position: relative;
+  
+  .back-button {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+    
+    @media (max-width: 768px) {
+      position: static;
+      margin-bottom: 1rem;
+    }
+  }
+  
+  .exercise-title {
+    color: white;
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    
+    @media (min-width: 768px) {
+      font-size: 2.5rem;
+    }
+  }
+  
+  .exercise-instructions {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+}
+
+// Contenido principal
+.exercise-content {
+  max-width: 1000px;
+  margin: 0 auto;
+  display: grid;
+  gap: 2rem;
+}
+
+// Sección de entrada
+.input-section {
+  @include card-style;
+  
+  .section-title {
+    color: $text-color;
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+  
+  .sequence-input-container {
+    margin-bottom: 1.5rem;
+    
+    .input-label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: $text-color;
+    }
+    
+    .sequence-input {
+      width: 100%;
+      padding: 1rem;
+      border: 2px solid $border-color;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.3s ease;
+      
+      &:focus {
+        outline: none;
+        border-color: $primary-color;
+      }
+      
+      &:disabled {
+        background: #f8f9fa;
+        cursor: not-allowed;
+      }
+    }
+  }
+  
+  .sequence-display {
+    .sequence-values {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      
+      .sequence-value {
+        background: linear-gradient(135deg, $primary-color, lighten($primary-color, 10%));
+        color: white;
+        padding: 0.75rem 1rem;
+        border-radius: 50%;
+        font-size: 1.2rem;
+        font-weight: 600;
+        min-width: 50px;
+        text-align: center;
+        box-shadow: 0 4px 8px rgba($primary-color, 0.3);
+        animation: bounceIn 0.5s ease-out;
+        animation-fill-mode: both;
+        
+        @media (max-width: 480px) {
+          font-size: 1rem;
+          padding: 0.5rem 0.75rem;
+          min-width: 40px;
+        }
+      }
+    }
+  }
+}
+
+// Sección de visualización
+.visualization-section {
+  @include card-style;
+  
+  .section-title {
+    color: $text-color;
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+  
+  .canvas-container {
+    position: relative;
+    width: 100%;
+    height: 200px;
+    border: 2px solid $border-color;
+    border-radius: 8px;
+    overflow: hidden;
+    
+    .sequence-canvas {
+      width: 100%;
+      height: 100%;
+      background: #fafafa;
+    }
+  }
+}
+
+// Botón de análisis
+.analysis-trigger {
+  text-align: center;
+  
+  .analyze-button {
+    @include button-style($primary-color);
+    font-size: 1.2rem;
+    padding: 1rem 2rem;
+    border-radius: 25px;
+    box-shadow: 0 6px 16px rgba($primary-color, 0.3);
+    
+    &:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 20px rgba($primary-color, 0.4);
+    }
+  }
+}
+
+// Estado de análisis
+.analyzing-state {
+  @include card-style;
+  text-align: center;
+  
+  .analyzer-spinner {
+    width: 60px;
+    height: 60px;
+    border: 6px solid $border-color;
+    border-top: 6px solid $primary-color;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 1rem;
+  }
+  
+  p {
+    color: $text-color;
+    font-size: 1.1rem;
+    margin: 0;
+  }
+}
+
+// Resultados del análisis
+.analysis-results {
+  @include card-style;
+  
+  .section-title {
+    color: $text-color;
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+  
+  .pattern-info {
+    .pattern-type {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+      border-radius: 8px;
+      
+      .pattern-label {
+        font-weight: 600;
+        color: $text-color;
+      }
+      
+      .pattern-value {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        
+        &.pattern-arithmetic {
+          background: $primary-color;
+          color: white;
+        }
+        
+        &.pattern-geometric {
+          background: $secondary-color;
+          color: white;
+        }
+        
+        &.pattern-fibonacci {
+          background: $accent-color;
+          color: white;
+        }
+        
+        &.pattern-unknown {
+          background: #6c757d;
+          color: white;
+        }
+      }
+    }
+    
+    .pattern-details {
+      display: grid;
+      gap: 0.75rem;
+      
+      .detail-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem;
+        border: 1px solid $border-color;
+        border-radius: 6px;
+        
+        .detail-label {
+          font-weight: 500;
+          color: $text-color;
+        }
+        
+        .detail-value {
+          font-weight: 600;
+          color: $primary-color;
+          
+          &.formula {
+            font-family: 'Courier New', monospace;
+            background: #f8f9fa;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.9rem;
+          }
+        }
+      }
+    }
+  }
+  
+  .prediction-trigger {
+    text-align: center;
+    margin-top: 1.5rem;
+    
+    .predict-button {
+      @include button-style($secondary-color);
+      font-size: 1.1rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: 20px;
+    }
+  }
+}
+
+// Sección de predicciones
+.predictions-section {
+  @include card-style;
+  
+  .section-title {
+    color: $text-color;
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    text-align: center;
+  }
+  
+  .predictions-container {
+    .prediction-inputs {
+      display: grid;
+      gap: 1rem;
+      
+      .prediction-input-group {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        border: 2px solid $border-color;
+        border-radius: 8px;
+        background: #fafafa;
+        
+        .prediction-label {
+          font-weight: 500;
+          color: $text-color;
+          min-width: 100px;
+        }
+        
+        .prediction-input {
+          flex: 1;
+          max-width: 120px;
+          padding: 0.5rem;
+          border: 2px solid $border-color;
+          border-radius: 6px;
+          font-size: 1rem;
+          text-align: center;
+          
+          &:focus {
+            outline: none;
+            border-color: $primary-color;
+          }
+        }
+        
+        .predicted-value {
+          color: $secondary-color;
+          font-weight: 600;
+          opacity: 0;
+          transition: opacity 0.3s ease;
+          
+          &.show-hint {
+            opacity: 1;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Sección de pistas
+.hints-section {
+  @include card-style;
+  
+  .hint-button {
+    @include button-style($warning-color, $text-color);
+    margin-bottom: 1rem;
+  }
+  
+  .hints-container {
+    .hint-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      padding: 1rem;
+      margin-bottom: 0.75rem;
+      background: linear-gradient(135deg, #fff3cd, #ffeaa7);
+      border-radius: 8px;
+      border-left: 4px solid $warning-color;
+      animation: fadeInLeft 0.5s ease-out;
+      
+      .hint-icon {
+        font-size: 1.2rem;
+        flex-shrink: 0;
+      }
+      
+      .hint-text {
+        color: $text-color;
+        line-height: 1.5;
+      }
+    }
+  }
+}
+
+// Sección de feedback
+.feedback-section {
+  max-width: 600px;
+  margin: 0 auto 2rem;
+  
+  .feedback-card {
+    @include card-style;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    text-align: left;
+    
+    &.correct {
+      border-left: 4px solid $success-color;
+      background: linear-gradient(90deg, rgba(76, 175, 80, 0.1), white);
+    }
+    
+    &.incorrect {
+      border-left: 4px solid $error-color;
+      background: linear-gradient(90deg, rgba(255, 107, 107, 0.1), white);
+    }
+    
+    .feedback-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      
+      span {
+        color: white;
+      }
+    }
+    
+    &.correct .feedback-icon {
+      background: $success-color;
+    }
+    
+    &.incorrect .feedback-icon {
+      background: $error-color;
+    }
+    
+    .feedback-message {
+      margin: 0;
+      font-size: 1.1rem;
+      color: $text-color;
+      line-height: 1.5;
+    }
+  }
+}
+
+// Botones de acción
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  max-width: 600px;
+  margin: 0 auto;
+  flex-wrap: wrap;
+  
+  .btn {
+    flex: 1;
+    min-width: 120px;
+    
+    &.btn-primary {
+      @include button-style($primary-color);
+    }
+    
+    &.btn-secondary {
+      @include button-style(#6c757d);
+    }
+    
+    &.btn-success {
+      @include button-style($success-color);
+    }
+  }
+  
+  @media (max-width: 480px) {
+    flex-direction: column;
+    
+    .btn {
+      width: 100%;
+    }
+  }
+}
+
+// Animaciones
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .exercise-container {
+    padding: 1rem;
+  }
+  
+  .input-section .sequence-display .sequence-values {
+    gap: 0.5rem;
+  }
+  
+  .predictions-section .prediction-inputs .prediction-input-group {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    
+    .prediction-label {
+      min-width: auto;
+    }
+    
+    .prediction-input {
+      max-width: 100%;
+    }
+  }
+}
+
+// Accesibilidad
+@media (prefers-reduced-motion: reduce) {
+  .sequence-value,
+  .hint-item {
+    animation: none;
+  }
+  
+  .btn:hover {
+    transform: none;
+  }
+} 

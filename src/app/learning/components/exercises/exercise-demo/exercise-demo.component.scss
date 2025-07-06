@@ -1,0 +1,458 @@
+// Variables
+$primary-color: #4A90E2;
+$secondary-color: #7ED321;
+$accent-color: #FFB366;
+$success-color: #4CAF50;
+$background-color: #F8F9FA;
+$text-color: #2C3E50;
+$border-color: #E1E8ED;
+$shadow-color: rgba(0, 0, 0, 0.1);
+
+// Contenedor principal
+.demo-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 2rem;
+  
+  @media (max-width: 768px) {
+    padding: 1rem;
+  }
+}
+
+// Header
+.demo-header {
+  text-align: center;
+  margin-bottom: 3rem;
+  
+  .back-button {
+    position: absolute;
+    top: 2rem;
+    left: 2rem;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 25px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    
+    &:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+    
+    @media (max-width: 768px) {
+      position: static;
+      margin-bottom: 1rem;
+    }
+  }
+  
+  .demo-title {
+    color: white;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    
+    @media (max-width: 768px) {
+      font-size: 2rem;
+    }
+  }
+  
+  .demo-subtitle {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.2rem;
+    margin: 0;
+  }
+}
+
+// Categorías de ejercicios
+.exercise-category {
+  margin-bottom: 4rem;
+  
+  .category-title {
+    color: white;
+    font-size: 2rem;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 2rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    
+    @media (max-width: 768px) {
+      font-size: 1.5rem;
+    }
+  }
+}
+
+// Grid de ejercicios
+.exercise-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+}
+
+// Tarjetas de ejercicios
+.exercise-card {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  
+  &:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.2);
+  }
+  
+  .card-header {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-bottom: 1px solid $border-color;
+    
+    .card-title {
+      margin: 0 0 1rem 0;
+      color: $text-color;
+      font-size: 1.3rem;
+      font-weight: 600;
+    }
+    
+    .card-badges {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      
+      .badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        
+        &.badge-primary {
+          background: $primary-color;
+          color: white;
+        }
+        
+        &.badge-secondary {
+          background: #6c757d;
+          color: white;
+        }
+        
+        &.badge-success {
+          background: $success-color;
+          color: white;
+        }
+      }
+    }
+  }
+  
+  .card-content {
+    padding: 1.5rem;
+    
+    .card-instructions {
+      color: #6c757d;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      margin-bottom: 1.5rem;
+    }
+    
+    .chart-preview {
+      background: #f8f9fa;
+      border-radius: 8px;
+      padding: 1rem;
+      
+      .preview-bars {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        height: 80px;
+        margin-bottom: 0.5rem;
+        gap: 4px;
+        
+        .preview-bar {
+          flex: 1;
+          min-height: 10px;
+          border-radius: 2px 2px 0 0;
+          transition: all 0.3s ease;
+          
+          &:hover {
+            opacity: 0.8;
+          }
+        }
+      }
+      
+      .preview-labels {
+        display: flex;
+        justify-content: space-between;
+        gap: 4px;
+        
+        .preview-label {
+          flex: 1;
+          text-align: center;
+          font-size: 0.7rem;
+          color: #6c757d;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+      }
+    }
+  }
+  
+  .card-footer {
+    padding: 1rem 1.5rem;
+    background: #f8f9fa;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    
+    .data-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      
+      .data-count,
+      .max-value {
+        font-size: 0.8rem;
+        color: #6c757d;
+      }
+    }
+    
+    .play-button {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: $primary-color;
+      font-weight: 600;
+      
+      .play-icon {
+        font-size: 1.2rem;
+      }
+      
+      .play-text {
+        font-size: 0.9rem;
+      }
+    }
+  }
+  
+  // Estilos específicos para tarjetas de secuencias
+  &.sequence-card {
+    border-left: 4px solid #FFB366;
+    
+    .card-content {
+      .sequence-preview {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        
+        .sequence-values {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.5rem;
+          flex-wrap: wrap;
+          
+          .sequence-value {
+            background: linear-gradient(135deg, #FFB366, #FF9F43);
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 50%;
+            font-weight: 600;
+            min-width: 35px;
+            text-align: center;
+            font-size: 0.9rem;
+          }
+          
+          .sequence-dots {
+            color: #6c757d;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-left: 0.5rem;
+          }
+        }
+      }
+    }
+    
+    .card-footer {
+      .data-info {
+        .predictions-count {
+          font-size: 0.8rem;
+          color: #6c757d;
+        }
+      }
+    }
+  }
+
+  // Estilos específicos para tarjetas de probabilidad
+  &.probability-card {
+    border-left: 4px solid #4ECDC4;
+    
+    .card-content {
+      .probability-preview {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        
+        .sphere-preview {
+          margin-bottom: 1rem;
+          
+          .preview-box {
+            position: relative;
+            width: 100%;
+            height: 80px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            overflow: hidden;
+            
+            .preview-sphere {
+              position: absolute;
+              width: 12px;
+              height: 12px;
+              border-radius: 50%;
+              transform: translate(-50%, -50%);
+              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+              
+              // Efecto 3D básico
+              background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.6), transparent 60%);
+            }
+          }
+        }
+        
+        .color-distribution {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 0.5rem;
+          justify-content: center;
+          
+          .distribution-item {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.5rem;
+            background: white;
+            border-radius: 15px;
+            border: 1px solid #dee2e6;
+            
+            .color-dot {
+              width: 8px;
+              height: 8px;
+              border-radius: 50%;
+              box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            }
+            
+            .color-label {
+              font-size: 0.7rem;
+              color: #6c757d;
+            }
+            
+            .color-count {
+              font-size: 0.7rem;
+              font-weight: 600;
+              color: #495057;
+              background: #e9ecef;
+              padding: 0.1rem 0.3rem;
+              border-radius: 10px;
+            }
+          }
+        }
+      }
+    }
+    
+    .card-footer {
+      .data-info {
+        .simulation-count {
+          font-size: 0.8rem;
+          color: #6c757d;
+        }
+      }
+    }
+  }
+}
+
+// Animaciones
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.exercise-card {
+  animation: fadeInUp 0.5s ease-out;
+  
+  @for $i from 1 through 6 {
+    &:nth-child(#{$i}) {
+      animation-delay: #{$i * 0.1}s;
+    }
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 480px) {
+  .exercise-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .exercise-card {
+    .card-header {
+      padding: 1rem;
+      
+      .card-title {
+        font-size: 1.1rem;
+      }
+    }
+    
+    .card-content {
+      padding: 1rem;
+    }
+    
+    .card-footer {
+      padding: 0.75rem 1rem;
+    }
+  }
+}
+
+// Estados de carga
+.loading {
+  .exercise-card {
+    opacity: 0.6;
+    pointer-events: none;
+  }
+}
+
+// Accesibilidad
+@media (prefers-reduced-motion: reduce) {
+  .exercise-card {
+    animation: none;
+    
+    &:hover {
+      transform: none;
+    }
+  }
+}
+
+// Focus states
+.exercise-card:focus {
+  outline: 2px solid $primary-color;
+  outline-offset: 2px;
+}
+
+.back-button:focus {
+  outline: 2px solid white;
+  outline-offset: 2px;
+} 
