@@ -13,10 +13,6 @@ export class UserService {
 
   constructor(private http: HttpClient) { }
 
-  getStudentById(userId: number): Observable<StudentDetail> {
-    return this.http.get<StudentDetail>(`${this.baseUrl}/students/${userId}`);
-  }
-
   getProfile(): Observable<StudentDetail> {
     return this.http.get<StudentDetail>(`${this.baseUrl}/profile`);
   }

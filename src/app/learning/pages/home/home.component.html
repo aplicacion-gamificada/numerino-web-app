@@ -40,7 +40,7 @@
             <div class="blocks-path" *ngIf="!isLoading && !hasError && learningBlocks.length > 0">
                 <div class="blocks-wrapper">
                     <app-bloque-card 
-                        *ngFor="let block of learningBlocks; let i = index" 
+                        *ngFor="let block of learningBlocks; let i = index; trackBy: trackByBlockId" 
                         [block]="block"
                         [position]="getBlockPosition(i)" 
                         (click)="onBlockClick(block)" 

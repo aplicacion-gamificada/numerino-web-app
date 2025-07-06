@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
 import { catchError, finalize, map, switchMap } from 'rxjs/operators';
 
@@ -46,7 +47,8 @@ export class HomeComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private userService: UserService,
     private learningService: LearningService,
-    private progressService: ProgressService
+    private progressService: ProgressService,
+    private router: Router
   ) { }
 
   ngOnInit(): void {
@@ -61,74 +63,48 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.hasError = false;
     
-    // Primero obtener el perfil del estudiante
-    this.userService.getProfile().pipe(
-      switchMap((student: StudentDetail) => {
-        this.studentDetail = student;
-        this.studentName = student.fullName;
-        
-        // Ahora usar el studentProfileId real para obtener datos
+    // Iniciar la carga de datos en paralelo
+    forkJoin({
+      student: this.userService.getProfile(),
+      assignedSpecialization: this.learningService.getAssignedSpecialization()
+    }).pipe(
+      switchMap(initialData => {
+        this.studentDetail = initialData.student;
+        this.studentName = initialData.student.fullName;
+        this.assignedSpecialization = initialData.assignedSpecialization;
+
+        if (!initialData.assignedSpecialization) {
+          throw new Error('No se encontró una especialización asignada.');
+        }
+
+        // Ahora, con los IDs, obtenemos los datos de progreso en paralelo
         return forkJoin({
-          assignedSpecialization: this.learningService.getAssignedSpecialization(),
-          currentProgress: this.progressService.getCurrentProgress(student.studentProfileId).pipe(
-            catchError((error) => {
+          specializationProgress: this.learningService.getSpecializationProgress(initialData.assignedSpecialization.specializationId),
+          currentProgress: this.progressService.getCurrentProgress(initialData.student.studentProfileId).pipe(
+            catchError(error => {
               console.warn('No se pudo obtener el progreso actual:', error);
-              return of(null);
+              return of(null); // Continuar aunque falle
             })
           )
         });
       }),
-      catchError((error) => {
-        console.error('Error loading student data:', error);
+      catchError(error => {
+        console.error('Error al cargar los datos del estudiante:', error);
         this.hasError = true;
-        this.errorMessage = 'Error al cargar los datos del estudiante';
+        this.errorMessage = error.message || 'Error al cargar los datos del estudiante.';
         return of(null);
       }),
-      finalize(() => this.isLoading = false)
-    ).subscribe({
-      next: (data) => {
-        if (data && data.assignedSpecialization) {
-          this.assignedSpecialization = data.assignedSpecialization;
-          
-          // Obtener el progreso detallado de la especialización
-          this.loadSpecializationProgress(data.assignedSpecialization.specializationId);
-          
-          // Si hay progreso actual, también procesarlo
-          if (data.currentProgress) {
-            console.log('Progreso actual del estudiante:', data.currentProgress);
-          }
-        } else {
-          this.hasError = true;
-          this.errorMessage = 'No se pudo cargar la información del estudiante o no tiene una especialización asignada';
-        }
-      },
-      error: (error) => {
-        console.error('Error loading student data:', error);
-        this.hasError = true;
-        this.errorMessage = 'Error al cargar los datos del estudiante';
-      }
-    });
-  }
-
-  private loadSpecializationProgress(specializationId: number) {
-    this.learningService.getSpecializationProgress(specializationId).pipe(
-      catchError((error) => {
-        console.error('Error loading specialization progress:', error);
-        this.hasError = true;
-        this.errorMessage = 'Error al cargar el progreso de la especialización';
-        return of(null);
+      finalize(() => {
+        this.isLoading = false;
       })
-    ).subscribe({
-      next: (progress) => {
-        if (progress) {
-          this.specializationProgress = progress;
-          this.processSpecializationProgress(progress);
+    ).subscribe(data => {
+      if (data) {
+        this.specializationProgress = data.specializationProgress;
+        this.processSpecializationProgress(data.specializationProgress);
+        
+        if (data.currentProgress) {
+          console.log('Progreso actual del estudiante:', data.currentProgress);
         }
-      },
-      error: (error) => {
-        console.error('Error loading specialization progress:', error);
-        this.hasError = true;
-        this.errorMessage = 'Error al cargar el progreso de la especialización';
       }
     });
   }
@@ -257,9 +233,8 @@ export class HomeComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Navegar al módulo correspondiente
-    // TODO: Implementar navegación a la vista de unidades del módulo
-    console.log(`Navigating to module ${block.id}`);
+    // Navegar a la vista de unidades del módulo
+    this.router.navigate(['/learning/module', block.id]);
   }
 
   getProgressText(): string {
@@ -280,5 +255,9 @@ export class HomeComponent implements OnInit, OnDestroy {
     
     const nextItem = this.specializationProgress.nextLearningItem;
     return `Próximo: ${nextItem.itemTitle}`;
+  }
+
+  trackByBlockId(index: number, block: LearningBlock): number {
+    return block.id;
   }
 }

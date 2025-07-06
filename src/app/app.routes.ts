@@ -9,6 +9,7 @@ import { AchievementComponent } from './achievement/components/achievement/achie
 import { StudentProgressComponent } from './progress/components/student-progress/student-progress.component';
 import { StudentClassroomComponent } from './classroom/components/student-classroom/student-classroom.component';
 import { LearingCardsComponent } from './learning/pages/learing-cards/learing-cards.component';
+import { UnitLearningPointsComponent } from './learning/pages/unit-learning-points/unit-learning-points.component';
 
 
 export const routes: Routes = [
@@ -56,6 +57,14 @@ export const routes: Routes = [
     {
         path: 'learning',
         component: LearingCardsComponent
+    },
+    {
+        path: 'learning/module/:moduleId',
+        component: LearingCardsComponent
+    },
+    {
+        path: 'learning/unit/:unitId',
+        component: UnitLearningPointsComponent
     }
 
 ];

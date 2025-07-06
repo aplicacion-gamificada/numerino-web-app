@@ -1,10 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router, ActivatedRoute } from '@angular/router';
 import { FriendsComponent } from "../../../layout/components/friends/friends.component";
 import { ProgressBarComponent } from "../../../layout/components/progress-bar/progress-bar.component";
 import { SidebarMenuComponent } from "../../../layout/components/sidebar-menu/sidebar-menu.component";
 import { LearningCard, LearningCardComponent } from "../../components/learning-card/learning-card.component";
-import { LearningService } from '../../services/learning.service';
+import { LearningService, Unit, SpecializationProgressDto, ModuleProgressDto } from '../../services/learning.service';
 import { ProgressService, CurrentProgress } from '../../../progress/services/progress.service';
 import { UserService } from '../../../auth/services/user.service';
 import { AuthService } from '../../../auth/services/auth-services.service';
@@ -24,104 +25,117 @@ export class LearingCardsComponent implements OnInit {
   sections: Section[] = [];
   isLoading = true;
   error: string | null = null;
+  moduleId: number | null = null;
+  moduleTitle: string = '';
 
   constructor(
     private learningService: LearningService,
     private progressService: ProgressService,
     private userService: UserService,
-    private authService: AuthService
+    private authService: AuthService,
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
 
   ngOnInit() {
-    this.loadLearningData();
+    // Obtener el moduleId de la ruta
+    this.route.paramMap.subscribe(params => {
+      const moduleIdParam = params.get('moduleId');
+      if (moduleIdParam) {
+        this.moduleId = parseInt(moduleIdParam, 10);
+        this.loadModuleUnits();
+      } else {
+        // Si no hay moduleId, redirigir al home
+        this.router.navigate(['/home']);
+      }
+    });
   }
 
-  private async loadLearningData() {
+  private async loadModuleUnits() {
     try {
       this.isLoading = true;
       this.error = null;
 
-      // Obtener el ID del usuario actual
-      const userId = this.authService.getUserId();
-      if (!userId) {
-        throw new Error('Usuario no autenticado');
+      if (!this.moduleId) {
+        throw new Error('ID del módulo no válido');
       }
 
-      // Obtener los datos del estudiante
-      const studentData = await this.userService.getStudentById(parseInt(userId)).toPromise();
-      if (!studentData?.studentProfileId) {
-        throw new Error('No se pudo obtener el perfil del estudiante');
-      }
-
-      // Obtener el progreso actual del estudiante
-      const currentProgress = await this.progressService.getCurrentProgress(studentData.studentProfileId).toPromise();
+      // Obtener las unidades del módulo
+      const units = await this.learningService.getUnitsByModuleId(this.moduleId).toPromise();
       
-      if (currentProgress?.learningPath) {
-        await this.loadLearningPointsFromProgress(currentProgress);
-      } else {
-        // Si no hay progreso, mostrar contenido por defecto o crear learning path
-        this.sections = [];
-      }
+      if (units && units.length > 0) {
+        // Obtener el progreso del estudiante para determinar el estado de cada unidad
+        const studentData = await this.userService.getProfile().toPromise();
+        let specializationProgress: SpecializationProgressDto | null = null;
+        
+        if (studentData?.studentProfileId) {
+          try {
+                         const assignedSpecialization = await this.learningService.getAssignedSpecialization().toPromise();
+             if (assignedSpecialization) {
+               specializationProgress = await this.learningService.getSpecializationProgress(assignedSpecialization.specializationId).toPromise() || null;
+             }
+          } catch (error) {
+            console.warn('No se pudo obtener el progreso de la especialización:', error);
+          }
+        }
 
-    } catch (error: any) {
-      console.error('Error cargando datos de aprendizaje:', error);
-      this.error = 'Error al cargar el contenido de aprendizaje. Por favor, intenta nuevamente.';
-    } finally {
-      this.isLoading = false;
-    }
-  }
+        // Obtener información del módulo actual
+        const currentModule = specializationProgress?.modules.find(m => m.moduleId === this.moduleId) || null;
+        this.moduleTitle = currentModule?.moduleTitle || `Módulo ${this.moduleId}`;
 
-  private async loadLearningPointsFromProgress(progress: CurrentProgress) {
-    try {
-      // Obtener los learning points de la unidad actual
-      const learningPoints = await this.learningService.getLearningPointsByUnit(progress.learningPath.unitsId).toPromise();
-      
-      if (learningPoints && learningPoints.length > 0) {
-        // Agrupar por unidad (por ahora solo tenemos una unidad)
-        const cards: LearningCard[] = learningPoints.map(point => {
-          const isCompleted = progress.completedLearningPoints >= point.sequenceOrder;
-          const isInProgress = progress.learningPath.currentLearningPointId === point.id;
-          const isBlocked = point.sequenceOrder > progress.completedLearningPoints + 1;
+        // Convertir unidades a cards
+        const cards: LearningCard[] = units.map(unit => {
+          // Determinar el estado de la unidad basado en el progreso
+          let status: 'COMPLETADO' | 'EN PROCESO' | 'BLOQUEADO' = 'BLOQUEADO';
+          let isBlocked = true;
+          let points = 0;
 
-          let status: 'COMPLETADO' | 'EN PROCESO' | 'BLOQUEADO';
-          if (isCompleted) {
-            status = 'COMPLETADO';
-          } else if (isInProgress) {
-            status = 'EN PROCESO';
-          } else {
-            status = 'BLOQUEADO';
+          if (currentModule) {
+            // Lógica simple: si el módulo está desbloqueado, las unidades también
+            if (currentModule.isUnlocked) {
+              status = currentModule.isCompleted ? 'COMPLETADO' : 'EN PROCESO';
+              isBlocked = false;
+              points = currentModule.isCompleted ? Math.round(currentModule.progressPercentage) : 0;
+            }
           }
 
           return {
-            id: point.id,
-            title: point.title,
-            subtitle: point.description,
-            exerciseCount: point.exercisesCount || 0,
+            id: unit.id,
+            title: unit.title,
+            subtitle: unit.description,
+            exerciseCount: unit.lessonsCount || 0,
             status: status,
-            points: isCompleted ? Math.round(point.difficultyWeight * 10) : 0,
+            points: points,
             isBlocked: isBlocked
           };
         });
 
         this.sections = [
           {
-            title: progress.learningPath.unitTitle || 'Contenido de Aprendizaje',
+            title: this.moduleTitle,
             cards: cards
           }
         ];
+      } else {
+        this.sections = [];
+        this.error = 'No se encontraron unidades para este módulo';
       }
-    } catch (error) {
-      console.error('Error cargando learning points:', error);
-      // Fallback: mantener la estructura vacía
-      this.sections = [];
+
+    } catch (error: any) {
+      console.error('Error cargando unidades del módulo:', error);
+      this.error = 'Error al cargar las unidades del módulo. Por favor, intenta nuevamente.';
+    } finally {
+      this.isLoading = false;
     }
   }
 
+
+
   onCardClick(card: LearningCard) {
     if (!card.isBlocked) {
-      console.log('Navegando a la ficha:', card.title);
-      // Aquí iría la lógica de navegación a los ejercicios del learning point
-      // Por ejemplo: this.router.navigate(['/exercises', card.id]);
+      console.log('Navegando a la unidad:', card.title);
+      // Navegar a los learning points de la unidad
+      this.router.navigate(['/learning/unit', card.id]);
     }
   }
 

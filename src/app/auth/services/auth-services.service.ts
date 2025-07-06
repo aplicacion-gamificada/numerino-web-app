@@ -59,10 +59,6 @@ export class AuthService {
     return localStorage.getItem(this.userIdKey);
   }
 
-  getStudentInfo(userId: string) {
-    return this.http.get(`${this.baseUrl.replace('/auth', '')}/users/students/${userId}`);
-  }
-
   /**
    * Verifica si un identificador (email o username) está disponible
    */

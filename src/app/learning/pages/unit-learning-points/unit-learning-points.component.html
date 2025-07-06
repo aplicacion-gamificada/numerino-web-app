@@ -19,10 +19,21 @@
         <!-- Sección 4 -->
         <div class="bg-white p-4">
             <header class="section-header">
-                <h1 class="main-title">Fichas del Módulo</h1>
+                <h1 class="main-title">Puntos de Aprendizaje</h1>
             </header>
 
-            <div class="sections-wrapper">
+            <!-- Loading state -->
+            <div *ngIf="isLoading" class="flex justify-center items-center py-8">
+                <div class="text-gray-600">Cargando puntos de aprendizaje...</div>
+            </div>
+
+            <!-- Error state -->
+            <div *ngIf="error && !isLoading" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                {{ error }}
+            </div>
+
+            <!-- Content -->
+            <div *ngIf="!isLoading && !error" class="sections-wrapper">
                 <div class="section" *ngFor="let section of sections; trackBy: trackBySection">
                     <h2 class="section-title">{{ section.title }}</h2>
 
@@ -31,6 +42,11 @@
                             (click)="onCardClick(card)">
                         </app-learning-card>
                     </div>
+                </div>
+
+                <!-- Empty state -->
+                <div *ngIf="sections.length === 0" class="text-center py-8 text-gray-500">
+                    No hay puntos de aprendizaje disponibles para esta unidad.
                 </div>
             </div>
         </div>
@@ -47,4 +63,4 @@
             </div>
         </div>
     </div>
-</div>
+</div> 
