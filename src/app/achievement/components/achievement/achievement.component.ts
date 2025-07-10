@@ -1,118 +1,84 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SidebarMenuComponent } from '../../../layout/components/sidebar-menu/sidebar-menu.component';
 import { AchievementCardComponent } from '../achievement-card/achievement-card.component';
 import { AchievementSummaryComponent } from '../achievement-summary/achievement-summary.component';
 import { AchievementCardExpandedComponent } from "../achievement-card-expanded/achievement-card-expanded.component";
+import { AchievementService } from '../../services/achievement.service';
+import { AuthService } from '../../../auth/services/auth-services.service';
+import { Achievement } from '../../models/achievement.model';
+import { AchievementStats } from '../../models/achievement-stats.model';
+
 @Component({
   selector: 'app-achievement',
   imports: [SidebarMenuComponent, AchievementCardComponent, AchievementSummaryComponent, AchievementCardExpandedComponent, CommonModule],
   templateUrl: './achievement.component.html',
   styleUrl: './achievement.component.scss'
 })
-export class AchievementComponent {
-  logros = [
-    {
-      imageUrl: 'images/icon-achievement-1.png',
-      title: 'Maestro de las operaciones',
-      titleColor: '#1C4772',
-      subtitle: 'Completa el Bloque 1',
-      description: '¡Felicidades! Has dominado todas las operaciones básicas del Bloque 1 como un verdadero samurái matemático. Las calculadoras tiemblan ante tu presencia... ¡ya no te necesitan!',
-      description_points: 'Ganaste +100 puntos',
-      points: '+100 puntos',
-      pointsColor: '#0CB976'
-    },
-    {
-      imageUrl: 'images/icon-racha.png',
-      title: 'Racha de fuego',
-      titleColor: '#1C4772',
-      subtitle: '5 días consecutivos',
-      description: '¡Felicidades! Has dominado todas las operaciones básicas del Bloque 1 como un verdadero samurái matemático. Las calculadoras tiemblan ante tu presencia... ¡ya no te necesitan!',
-      description_points: 'Ganaste +100 puntos',
-      points: '+50 puntos',
-      pointsColor: '#FF6C4E'
-    },
-    {
-      imageUrl: 'images/icon-achievement-2.png',
-      title: 'Matemático Veloz',
-      titleColor: '#1C4772',
-      subtitle: 'Resuelve 5 ejercicios en menos de 5 minutos',
-      description: '¡Felicidades! Has dominado todas las operaciones básicas del Bloque 1 como un verdadero samurái matemático. Las calculadoras tiemblan ante tu presencia... ¡ya no te necesitan!',
-      description_points: 'Ganaste +100 puntos',
-      points: '+75 puntos',
-      pointsColor: '#F67905'
-    },
-    {
-      imageUrl: 'images/icon-achievement-1.png',
-      title: 'Perfeccionista',
-      titleColor: '#1C4772',
-      subtitle: 'Resuelve 5 ejercicios seguidos sin errores',
-      description: '¡Felicidades! Has dominado todas las operaciones básicas del Bloque 1 como un verdadero samurái matemático. Las calculadoras tiemblan ante tu presencia... ¡ya no te necesitan!',
-      description_points: 'Ganaste +100 puntos',
-      points: '+110 puntos',
-      pointsColor: '#0CB976'
-    },
-    {
-      imageUrl: 'images/icon-achievement-1.png',
-      title: 'Perfeccionista',
-      titleColor: '#1C4772',
-      subtitle: 'Resuelve 5 ejercicios seguidos sin errores',
-      description: '¡Felicidades! Has dominado todas las operaciones básicas del Bloque 1 como un verdadero samurái matemático. Las calculadoras tiemblan ante tu presencia... ¡ya no te necesitan!',
-      description_points: 'Ganaste +100 puntos',
-      points: '+110 puntos',
-      pointsColor: '#0CB976'
-    }
-  ];
-
-  proximos_logros = [
-    {
-      imageUrl: 'images/icon-achievement-locked.png',
-      title: 'Explorador Matemático',
-      titleColor: '#989898',
-      subtitle: 'Completa el Bloque 2',
-      points: '+150 puntos',
-      pointsColor: '#989898'
-    },
-    {
-      imageUrl: 'images/icon-achievement-locked.png',
-      title: 'Conquistador Numérico',
-      titleColor: '#989898',
-      subtitle: 'Completa el Bloque 3',
-      points: '+200 puntos',
-      pointsColor: '#989898'
-    },
-    {
-      imageUrl: 'images/icon-achievement-locked.png',
-      title: 'Maestro Supremo',
-      titleColor: '#989898',
-      subtitle: 'Completa el Bloque 4',
-      points: '+300 puntos',
-      pointsColor: '#989898'
-    },
-    {
-      imageUrl: 'images/icon-achievement-locked.png',
-      title: 'Gladiador',
-      titleColor: '#989898',
-      subtitle: 'Resuelve 20 ejercicios en total',
-      points: '+250 puntos',
-      pointsColor: '#989898'
-    },
-    {
-      imageUrl: 'images/icon-achievement-locked.png',
-      title: 'Gladiador',
-      titleColor: '#989898',
-      subtitle: 'Resuelve 20 ejercicios en total',
-      points: '+250 puntos',
-      pointsColor: '#989898'
-    }
-  ];
-
+export class AchievementComponent implements OnInit {
+  unlockedAchievements: Achievement[] = [];
+  lockedAchievements: Achievement[] = [];
+  achievementStats: AchievementStats | null = null;
+  totalPoints: number = 0;
   mostrarTodosDesbloqueados = false;
   mostrarTodosBloqueados = false;
+  selectedLogro: Achievement | null = null;
+  isLoading = true;
+  hasError = false;
 
-  selectedLogro: any = null;
+  constructor(
+    private achievementService: AchievementService,
+    private authService: AuthService
+  ) {}
 
-  abrirPopUp(logro: any) {
+  ngOnInit(): void {
+    const userId = Number(this.authService.getUserId());
+    if (!userId) {
+      this.hasError = true;
+      this.isLoading = false;
+      return;
+    }
+
+    this.isLoading = true;
+    this.hasError = false;
+
+    // Cargar logros desbloqueados
+    this.achievementService.getUnlockedAchievementsByUser(userId).subscribe({
+      next: (achievements) => {
+        this.unlockedAchievements = achievements;
+        this.isLoading = false;
+      },
+      error: () => {
+        this.hasError = true;
+        this.isLoading = false;
+      }
+    });
+
+    // Cargar stats
+    this.achievementService.getAchievementStatsByUser(userId).subscribe({
+      next: (stats) => {
+        this.achievementStats = stats;
+      }
+    });
+
+    // Cargar puntos totales
+    this.achievementService.getTotalPointsByUser(userId).subscribe({
+      next: (response) => {
+        this.totalPoints = response.points_amount;
+      }
+    });
+
+    // Cargar todos los logros para mostrar los bloqueados
+    this.achievementService.getAllAchievementsByUser(userId).subscribe({
+      next: (allAchievements) => {
+        console.log('Todos los logros:', allAchievements); // <-- revisa aquí
+        this.lockedAchievements = allAchievements.filter(a => a.is_unlocked === 0);
+        console.log('Logros bloqueados:', this.lockedAchievements); // <-- revisa aquí
+      }
+    });
+  }
+
+  abrirPopUp(logro: Achievement) {
     this.selectedLogro = logro;
   }
 
@@ -129,10 +95,10 @@ export class AchievementComponent {
   }
 
   get logrosMostrados() {
-    return this.mostrarTodosDesbloqueados ? this.logros : this.logros.slice(0, 4);
+    return this.mostrarTodosDesbloqueados ? this.unlockedAchievements : this.unlockedAchievements.slice(0, 4);
   }
 
-  get logrosBloqueadosMostrados(){
-    return this.mostrarTodosBloqueados ? this.proximos_logros : this.proximos_logros.slice(0, 4);
+  get logrosBloqueadosMostrados() {
+    return this.mostrarTodosBloqueados ? this.lockedAchievements : this.lockedAchievements.slice(0, 4);
   }
 }

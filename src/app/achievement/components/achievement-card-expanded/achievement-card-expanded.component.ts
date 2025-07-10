@@ -23,8 +23,8 @@ export class AchievementCardExpandedComponent {
   @Input() imageUrl!: string;
   @Input() title!: string;
   @Input() titleColor: string = '#000';
-  @Input() description!: string;
-  @Input() description_points!: string;
+  @Input() large_description!: string;
+  @Input() description_points!: number;
   @Input() pointsColor: string = '#000';
 
   @Output() close = new EventEmitter<void>();

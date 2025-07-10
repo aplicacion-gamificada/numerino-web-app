@@ -14,35 +14,36 @@
       <div class="flex flex-col items-center text-center">
         <img src="images/icon-your-classroom.png" class="w-16 h-16 mb-2" alt="Aula" />
         <div class="text-sm text-gray-500">Aula:</div>
-        <div class="font-medium text-gray-800">Sexto Grado B</div>
+        <div class="font-medium text-gray-800">{{ classroomData?.name }}</div>
       </div>
 
       <!-- Docente -->
       <div class="flex flex-col items-center text-center">
         <img src="assets/icons/docente.svg" class="w-16 h-16 mb-2" alt="Docente" />
         <div class="text-sm text-gray-500">Docente:</div>
-        <div class="font-medium text-gray-800">Profesor Luis Valdivia</div>
+        <div class="font-medium text-gray-800">{{ classroomData?.full_name }}</div>
       </div>
 
       <!-- Estudiantes -->
       <div class="flex flex-col items-center text-center">
         <img src="assets/icons/estudiantes.svg" class="w-16 h-16 mb-2" alt="Estudiantes" />
-        <div class="text-sm text-gray-500">25 estudiantes</div>
-        <div class="font-medium text-gray-800">Año 2025</div>
+        <div class="text-sm text-gray-500">{{ classroomData?.total_students }} estudiantes</div>
+        <div class="font-medium text-gray-800">{{ classroomData?.class_year }}</div>
       </div>
     </div>
 
     <!-- Sección: Tus compañeros -->
     <div class="lista-wrapper">
       <h2 class="aula-subtitulo">Tus compañeros</h2>
-
       <div class="tarjeta-companeros">
         <div class="grid">
-          <app-friends-card *ngFor="let c of companeros" [nombre]="c.nombre" [bloque]="c.bloque"
-            [imagenUrl]="c.imagenUrl">
+          <app-friends-card
+            *ngFor="let c of companeros"
+            [nombre]="c.full_name"
+            [bloque]="c.bloque"
+            [imagenUrl]="c.image_url">
           </app-friends-card>
         </div>
-        <a class="ver-mas" href="#">Ver más compañeros</a>
       </div>
     </div>
 

@@ -1,7 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { SidebarMenuComponent } from '../../../layout/components/sidebar-menu/sidebar-menu.component';
 import { FriendsCardComponent } from '../friends-card/friends-card.component';
 import { NgFor } from '@angular/common';
+import { ClassroomService } from '../../services/classroom.service';
+import { AuthService } from '../../../auth/services/auth-services.service';
+import { ClassRoomData } from '../../models/classroom-data.model';
+import { Classmates } from '../../models/classmates.model';
 
 @Component({
   selector: 'app-student-classroom',
@@ -9,13 +13,28 @@ import { NgFor } from '@angular/common';
   templateUrl: './student-classroom.component.html',
   styleUrl: './student-classroom.component.scss'
 })
-export class StudentClassroomComponent {
-companeros = [
-    { nombre: 'Pepito', bloque: 'Bloque 1', imagenUrl: 'images/icon-avatar-1.png' },
-    { nombre: 'Miguelito', bloque: 'Bloque 1', imagenUrl: 'images/icon-avatar-2.png' },
-    { nombre: 'Andrea', bloque: 'Bloque 1', imagenUrl: 'images/icon-avatar-3.png' },
-    { nombre: 'Juancito', bloque: 'Bloque 1', imagenUrl: 'images/icon-avatar-4.png' },
-    { nombre: 'Carlitos', bloque: 'Bloque 1', imagenUrl: 'images/icon-avatar-5.png' },
-    { nombre: 'Camila', bloque: 'Bloque 1', imagenUrl: 'images/icon-avatar-6.png' },
-  ];
+export class StudentClassroomComponent implements OnInit {
+  classroomData: ClassRoomData | null = null;
+  companeros: Classmates[] = [];
+
+  constructor(
+    private classroomService: ClassroomService,
+    private authService: AuthService
+  ) {}
+
+  ngOnInit(): void {
+    const userId = Number(this.authService.getUserId());
+    if (userId) {
+      this.classroomService.getClassroomDataByUser(userId).subscribe({
+        next: (data: ClassRoomData) => {
+          this.classroomData = data;
+        }
+      });
+      this.classroomService.getClassmatesByUser(userId).subscribe({
+        next: (data: Classmates[]) => {
+          this.companeros = data;
+        }
+      });
+    }
+  }
 }

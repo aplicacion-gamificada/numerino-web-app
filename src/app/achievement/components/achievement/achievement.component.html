@@ -11,12 +11,24 @@
 
     <!-- Tarjetas resumen -->
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-      <app-achievement-summary [imageUrl]="'images/icon-logros-obtenidos.png'" [title]="'Logros conseguidos'"
-        [subtitle]="'8/22'" [subtitleColor]="'#EF6C00'"></app-achievement-summary>
-      <app-achievement-summary [imageUrl]="'images/icon-puntos-totales.png'" [title]="'Puntos totales'"
-        [subtitle]="'450'" [subtitleColor]="'#59D721'"></app-achievement-summary>
-      <app-achievement-summary [imageUrl]="'images/icon-proximo-logro.png'" [title]="'Próximo logro en'"
-        [subtitle]="'50 puntos'" [subtitleColor]="'#28BFEE'"></app-achievement-summary>
+      <app-achievement-summary
+        [imageUrl]="'images/icon-logros-obtenidos.png'"
+        [title]="'Logros conseguidos'"
+        [subtitle]="achievementStats ? achievementStats.unlocked_achievements + '/' + achievementStats.total_achievements : '0/0'"
+        [subtitleColor]="'#EF6C00'">
+      </app-achievement-summary>
+      <app-achievement-summary
+        [imageUrl]="'images/icon-puntos-totales.png'"
+        [title]="'Puntos totales'"
+        [subtitle]="totalPoints.toString()"
+        [subtitleColor]="'#59D721'">
+      </app-achievement-summary>
+      <app-achievement-summary
+        [imageUrl]="'images/icon-proximo-logro.png'"
+        [title]="'Próximo logro en'"
+        [subtitle]="'50 puntos'"
+        [subtitleColor]="'#28BFEE'">
+      </app-achievement-summary>
     </div>
 
     <!-- Logros desbloqueados -->
@@ -28,18 +40,28 @@
     </div>
 
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-10 mt-10">
-      <ng-container *ngFor="let logro of logrosMostrados">
-        <app-achievement-card [imageUrl]="logro.imageUrl" [title]="logro.title" [titleColor]="logro.titleColor"
-          [subtitle]="logro.subtitle" [points]="logro.points" [pointsColor]="logro.pointsColor"
-          (click)="abrirPopUp(logro)">
-        </app-achievement-card>
+      <ng-container *ngIf="logrosMostrados.length > 0; else noLogros">
+        <ng-container *ngFor="let logro of logrosMostrados">
+          <app-achievement-card
+            [imageUrl]="logro.image_url"
+            [title]="logro.achievement_name"
+            [titleColor]="logro.title_color"
+            [subtitle]="logro.achievement_description"
+            [points]="logro.points_value + ' puntos'"
+            [pointsColor]="logro.points_color"
+            (click)="abrirPopUp(logro)">
+          </app-achievement-card>
+        </ng-container>
       </ng-container>
     </div>
+    <ng-template #noLogros>
+      <div class="text-center text-gray-500 mt-4">Aún no cuentas con logros</div>
+    </ng-template>
 
     <!-- Pop-up de logro expandido -->
-    <app-achievement-card-expanded *ngIf="selectedLogro" [imageUrl]="selectedLogro.imageUrl"
-      [title]="selectedLogro.title" [titleColor]="selectedLogro.titleColor" [description]="selectedLogro.description"
-      [description_points]="selectedLogro.description_points" [pointsColor]="selectedLogro.pointsColor" (close)="cerrarPopUp()">
+    <app-achievement-card-expanded *ngIf="selectedLogro" [imageUrl]="selectedLogro.image_url"
+      [title]="selectedLogro.achievement_name" [titleColor]="selectedLogro.title_color" [large_description]="selectedLogro.large_descripcion"
+      [description_points]="selectedLogro.points_value" [pointsColor]="selectedLogro.points_color" (close)="cerrarPopUp()">
     </app-achievement-card-expanded>
 
 
@@ -53,10 +75,14 @@
     
 
     <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mb-10 mt-10">
-      <ng-container *ngFor="let proximos_logros of logrosBloqueadosMostrados">
-        <app-achievement-card [imageUrl]="proximos_logros.imageUrl" [title]="proximos_logros.title"
-          [titleColor]="proximos_logros.titleColor" [subtitle]="proximos_logros.subtitle"
-          [points]="proximos_logros.points" [pointsColor]="proximos_logros.pointsColor">
+      <ng-container *ngFor="let logro of logrosBloqueadosMostrados">
+        <app-achievement-card
+          [imageUrl]="logro.image_url"
+          [title]="logro.achievement_name"
+          [titleColor]="'#989898'"
+          [subtitle]="logro.achievement_description"
+          [points]="logro.points_value + ' puntos'"
+          [pointsColor]="'#989898'">
         </app-achievement-card>
       </ng-container>
     </div>
