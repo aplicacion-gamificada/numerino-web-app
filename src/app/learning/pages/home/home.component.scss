@@ -14,7 +14,7 @@
 }
 
 .barra-superior {
-  background: linear-gradient(135deg, $primary 0%, lighten($primary, 10%) 100%);
+  background: white;
   padding: 16px 24px;
   display: flex;
   justify-content: space-between;
@@ -22,21 +22,20 @@
   color: $white;
 
   .saludo {
-    font-size: 24px;
+    font-size: 34px;
     font-weight: 600;
+    color: $secondary;
   }
 
   .buscador {
     padding: 10px 16px;
-    border: none;
+    border: $secondary 1px solid;
     border-radius: 25px;
-    background: rgba($white, 0.2);
-    color: $white;
-    placeholder-color: rgba($white, 0.8);
+    color: $secondary;
     min-width: 250px;
 
     &::placeholder {
-      color: rgba($white, 0.8);
+      color: $secondary;
     }
 
     &:focus {
