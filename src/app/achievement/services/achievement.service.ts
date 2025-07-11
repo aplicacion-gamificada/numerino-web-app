@@ -22,7 +22,7 @@ export class AchievementService {
   }
 
   getTotalPointsByUser(userId: number): Observable<{ points_amount: number }> {
-    return this.http.get<{ points_amount: number }>(`${this.baseUrl}/total-points-by-user/${userId}`);
+    return this.http.get<{ points_amount: number }>(`${this.baseUrl}/total-points/${userId}`);
   }
 
   getUnlockedAchievementsByUser(userId: number): Observable<Achievement[]> {
