@@ -27,12 +27,17 @@ export class StudentClassroomComponent implements OnInit {
     if (userId) {
       this.classroomService.getClassroomDataByUser(userId).subscribe({
         next: (data: ClassRoomData) => {
+          console.log('Compañeros:', data);
           this.classroomData = data;
         }
       });
       this.classroomService.getClassmatesByUser(userId).subscribe({
         next: (data: Classmates[]) => {
+          console.log('Compañeros:', data);
           this.companeros = data;
+        },
+        error: (err) => {
+          console.error('Error al obtener compañeros:', err);
         }
       });
     }
