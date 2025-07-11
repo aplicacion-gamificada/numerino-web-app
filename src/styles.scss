@@ -1,3 +1,7 @@
+@use "tailwindcss";
+@use "primeicons/primeicons.css";
+@layer tailwind, primeng;
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
