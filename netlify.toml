@@ -1,10 +1,10 @@
 [build]
   # Directory to change to before starting a build
   base = "."
-  # Directory that contains the deploy-ready HTML files and assets
-  publish = "dist/numerino-student-web-app"
   # A build command to execute before deploying
   command = "npm install && ng build --configuration production"
+  # Directory that contains the deploy-ready HTML files and assets
+  publish = "dist/numerino-student-web-app/browser"
 
 [[redirects]]
   from = "/*"
