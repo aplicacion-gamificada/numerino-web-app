@@ -1,8 +1,11 @@
-@use "tailwindcss";
-@use "primeicons/primeicons.css";
-@layer tailwind, primeng;
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-.body {
+@import "primeicons/primeicons.css";
+
+/* Puedes seguir usando tus estilos después */
+body {
     font-family: "DM Sans", sans-serif;
     font-optical-sizing: auto;
     font-weight: 500;
