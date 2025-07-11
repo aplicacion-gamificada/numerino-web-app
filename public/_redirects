@@ -1,0 +1,5 @@
+# API redirects - proxy API calls to backend
+/api/*  https://services-production-3f9a.up.railway.app/api/:splat  200
+
+# Angular SPA fallback - all other routes go to index.html
+/*    /index.html   200 
