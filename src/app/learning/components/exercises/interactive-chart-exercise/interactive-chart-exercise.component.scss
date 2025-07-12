@@ -1,257 +1,595 @@
-// Variables de colores
-$primary-color: #4A90E2;
-$secondary-color: #7ED321;
-$accent-color: #FFB366;
-$error-color: #FF6B6B;
-$success-color: #4CAF50;
-$background-color: #F8F9FA;
-$text-color: #2C3E50;
-$border-color: #E1E8ED;
-$shadow-color: rgba(0, 0, 0, 0.1);
+@import '../../../../shared/styles/_colors';
 
-// Mixins
-@mixin card-style {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px $shadow-color;
-  padding: 1.5rem;
-  margin-bottom: 1rem;
+// =============================================================================
+// EXERCISE CONTAINER - WHITE BACKGROUND LIKE LOGIN
+// =============================================================================
+
+:host {
+  display: block;
+  min-height: 100vh;
+  font-family: "DM Sans", sans-serif;
+  background: #ffffff;
+  overflow: hidden;
 }
 
-@mixin button-style($bg-color, $text-color: white) {
-  background: $bg-color;
-  color: $text-color;
-  border: none;
-  border-radius: 8px;
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  
-  &:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba($bg-color, 0.3);
-  }
-  
-  &:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-}
-
-// Contenedor principal
 .exercise-container {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 1rem;
+  background: #ffffff;
+  position: relative;
+  overflow: hidden;
   
-  @media (min-width: 768px) {
-    padding: 2rem;
+  &.transitioning {
+    * {
+      pointer-events: none;
+    }
   }
 }
 
-// Header del ejercicio
-.exercise-header {
+// =============================================================================
+// QUESTION VIEW - CENTER EMOJIS WITH CLICKABLE EFFECTS
+// =============================================================================
+
+.question-view {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 2rem;
+  transition: all 0.3s ease;
+  opacity: 1;
+  transform: translateY(0);
+  z-index: 5;
+  
+  &.fade-out {
+    opacity: 0;
+    transform: translateY(-30px);
+    pointer-events: none;
+  }
+}
+
+.question-header {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 3rem;
   position: relative;
   
   .back-button {
     position: absolute;
     top: 0;
     left: 0;
-    background: rgba(255, 255, 255, 0.2);
-    color: white;
+    background: rgba($secondary, 0.1);
+    color: $secondary;
     border: none;
     padding: 0.75rem 1.5rem;
     border-radius: 25px;
     font-size: 1rem;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
     
     &:hover {
-      background: rgba(255, 255, 255, 0.3);
+      background: rgba($secondary, 0.2);
       transform: translateY(-2px);
     }
+  }
+  
+  .question-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: $secondary;
+    margin-bottom: 1rem;
     
     @media (max-width: 768px) {
-      position: static;
-      margin-bottom: 1rem;
+      font-size: 2rem;
     }
   }
   
-  .exercise-title {
-    color: white;
-    font-size: 2rem;
-    font-weight: 700;
-    margin-bottom: 0.5rem;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    
-    @media (min-width: 768px) {
-      font-size: 2.5rem;
-    }
-  }
-  
-  .exercise-instructions {
-    color: rgba(255, 255, 255, 0.9);
-    font-size: 1.1rem;
+  .question-text {
+    font-size: 1.4rem;
+    font-weight: 500;
+    color: rgba($secondary, 0.8);
     max-width: 600px;
     margin: 0 auto;
     line-height: 1.6;
   }
-}
-
-// Contenido principal
-.exercise-content {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
   
-  @media (min-width: 1024px) {
-    grid-template-columns: 2fr 1fr;
+  .demo-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 0.75rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+    
+    .demo-btn {
+      background: rgba($primary, 0.1);
+      color: $primary;
+      border: 2px solid rgba($primary, 0.2);
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      
+      &:hover {
+        background: rgba($primary, 0.2);
+        border-color: $primary;
+        transform: translateY(-2px);
+      }
+      
+      &:active {
+        transform: translateY(0);
+      }
+      
+      @media (max-width: 480px) {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.8rem;
+      }
+    }
   }
 }
 
-// Sección del gráfico
+.emoji-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.emoji-area {
+  position: relative;
+  width: 80%;
+  height: 60vh;
+  max-width: 800px;
+  margin-bottom: 2rem;
+  
+  // File explorer window style background
+  background: 
+    linear-gradient(90deg, #e5e7eb 1px, transparent 1px),
+    linear-gradient(#e5e7eb 1px, transparent 1px);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 0;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.emoji-item {
+  position: absolute;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.2s ease;
+  z-index: 1;
+  
+  &:hover {
+    transform: scale(1.05);
+  }
+}
+
+.emoji-outline {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 9;
+  animation: pulse 0.3s ease-out;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.start-button-container {
+  display: flex;
+  justify-content: center;
+  
+  .start-button {
+    background: linear-gradient(135deg, $primary 0%, $secondary 100%);
+    color: white;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 50px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 6px 20px rgba($primary, 0.3);
+    
+    &:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba($primary, 0.4);
+    }
+    
+    &:active {
+      transform: translateY(-1px);
+    }
+  }
+}
+
+// =============================================================================
+// EXERCISE VIEW - TABLE WITH DRAGGABLE CELLS AND CHART
+// =============================================================================
+
+.exercise-view {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  overflow-y: auto;
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.3s ease;
+  z-index: 10;
+  
+  &.fade-in {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  // Custom scrollbar (hidden but functional)
+  &::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+  }
+  
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.exercise-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  position: relative;
+  
+  .back-to-question {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    border-radius: 25px;
+    background: rgba($primary, 0.1);
+    color: $primary;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    
+    &:hover {
+      background: rgba($primary, 0.2);
+      transform: translateY(-2px);
+    }
+    
+    .back-icon {
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    
+    .back-text {
+      font-size: 0.9rem;
+      
+      @media (max-width: 768px) {
+        display: none;
+      }
+    }
+  }
+  
+  .exercise-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: $secondary;
+    margin-bottom: 0.5rem;
+  }
+  
+  .exercise-instructions {
+    font-size: 1rem;
+    color: rgba($secondary, 0.7);
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.5;
+  }
+}
+
+.exercise-content {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  flex: 1;
+  padding: 0 1rem;
+  
+  @media (min-width: 1024px) {
+    grid-template-columns: 2fr 1fr;
+    gap: 1.5rem;
+  }
+}
+
+// =============================================================================
+// CHART SECTION - IMPROVED VISUALIZATION
+// =============================================================================
+
 .chart-section {
-  @include card-style;
+  background: transparent;
+  padding: 0;
   
   .chart-container {
     position: relative;
     width: 100%;
-    height: 400px;
-    margin-bottom: 1rem;
+    height: 500px;
+    background: white;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
     
     .chart-canvas {
       width: 100%;
       height: 100%;
-      border-radius: 8px;
+      border-radius: 6px;
       background: #fafafa;
-      cursor: default;
-      
-      &:hover {
-        background: #f5f5f5;
-      }
-    }
-  }
-  
-  .filter-section {
-    .filter-label {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      cursor: pointer;
-      
-      .filter-checkbox {
-        width: 18px;
-        height: 18px;
-        accent-color: $primary-color;
-      }
-      
-      .filter-text {
-        font-size: 0.9rem;
-        color: $text-color;
-      }
+      cursor: crosshair;
     }
   }
 }
 
-// Sección de datos
-.data-section {
-  @include card-style;
+// =============================================================================
+// TABLE SECTION - DRAGGABLE CELLS WITH COLORED ROWS
+// =============================================================================
+
+.table-section {
+  background: transparent;
+  padding: 0;
   
-  .data-title {
-    color: $text-color;
-    font-size: 1.3rem;
+  .table-title {
+    font-size: 1.2rem;
     font-weight: 600;
-    margin-bottom: 1rem;
-    text-align: center;
+    color: $secondary;
+    margin-bottom: 0.5rem;
+    text-align: left;
   }
   
-  .data-table-container {
+  .table-container {
     overflow-x: auto;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    background: white;
+  }
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 1rem;
+  background: white;
+  
+  th {
+    background: #f8f9fa;
+    padding: 0.75rem;
+    text-align: left;
+    font-weight: 600;
+    color: $secondary;
+    border-bottom: 2px solid #e5e7eb;
     
-    .data-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 0.9rem;
+    &.emoji-column {
+      width: 45%;
+    }
+    
+    &.value-column {
+      width: 55%;
+    }
+  }
+  
+  .data-row {
+    transition: all 0.2s ease;
+    border-bottom: 1px solid #e5e7eb;
+    
+    &:hover {
+      background-color: rgba(255, 255, 255, 0.8) !important;
+    }
+  }
+}
+
+.emoji-cell {
+  padding: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  
+  .emoji-display {
+    font-size: 1.8rem;
+    line-height: 1;
+  }
+  
+  .emoji-name {
+    font-weight: 500;
+    color: $secondary;
+    font-size: 1rem;
+  }
+}
+
+.value-cell {
+  padding: 0.75rem;
+  position: relative;
+  
+  .value-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    
+    .value-input {
+      width: 80px;
+      padding: 0.6rem;
+      border: 2px solid #e5e7eb;
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 1rem;
+      font-weight: 600;
+      text-align: center;
+      background: white;
+      transition: all 0.3s ease;
       
-      th, td {
-        padding: 0.75rem;
-        text-align: left;
-        border-bottom: 1px solid $border-color;
+      // Hacer las flechas siempre visibles
+      &::-webkit-outer-spin-button,
+      &::-webkit-inner-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
       }
       
-      th {
+      // Estilo personalizado para las flechas
+      appearance: textfield;
+      position: relative;
+      
+      &:focus {
+        outline: none;
+        border-color: $primary;
+        box-shadow: 0 0 0 3px rgba($primary, 0.1);
+      }
+      
+      &:disabled {
+        background: #f5f5f5;
+        cursor: not-allowed;
+      }
+    }
+    
+    // Botones de incremento/decremento personalizados
+    .number-controls {
+      display: flex;
+      flex-direction: column;
+      
+      .number-btn {
+        width: 20px;
+        height: 18px;
         background: #f8f9fa;
-        font-weight: 600;
-        color: $text-color;
-      }
-      
-      .category-cell {
-        font-weight: 500;
-        color: $text-color;
-      }
-      
-      .value-cell {
-        .value-input {
-          width: 80px;
-          padding: 0.5rem;
-          border: 2px solid $border-color;
-          border-radius: 6px;
-          font-size: 0.9rem;
-          text-align: center;
-          transition: border-color 0.3s ease;
-          
-          &:focus {
-            outline: none;
-            border-color: $primary-color;
-          }
+        border: 1px solid #e5e7eb;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        color: $secondary;
+        transition: all 0.2s ease;
+        
+        &:hover {
+          background: #e5e7eb;
+          color: $primary;
         }
         
-        .value-display {
-          font-weight: 600;
-          color: $text-color;
+        &:first-child {
+          border-radius: 4px 4px 0 0;
+          border-bottom: none;
+        }
+        
+        &:last-child {
+          border-radius: 0 0 4px 4px;
         }
       }
+    }
+    
+    .drag-area {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 40px;
+      cursor: ns-resize;
+      color: #9ca3af;
+      background: #f8f9fa;
+      border: 1px solid #e5e7eb;
+      border-radius: 4px;
+      transition: all 0.2s ease;
       
-      .color-cell {
-        .color-indicator {
-          width: 24px;
-          height: 24px;
-          border-radius: 50%;
-          border: 2px solid white;
-          box-shadow: 0 2px 4px $shadow-color;
-        }
+      &:hover {
+        background: #e5e7eb;
+        color: $secondary;
+      }
+      
+      &.dragging {
+        background: $primary;
+        color: white;
+        transform: scale(1.1);
+        box-shadow: 0 4px 12px rgba($primary, 0.3);
+      }
+      
+      .drag-handle {
+        font-size: 0.8rem;
+        line-height: 1;
+        pointer-events: none;
+      }
+    }
+  }
+  
+  .correct-indicator {
+    position: absolute;
+    top: 50%;
+    right: 1rem;
+    transform: translateY(-50%);
+    background: $success;
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    animation: slideIn 0.3s ease;
+    
+    .correct-value {
+      &:before {
+        content: '✓ ';
       }
     }
   }
 }
 
-// Sección de feedback
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) translateX(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
+}
+
+// =============================================================================
+// FEEDBACK SECTION
+// =============================================================================
+
 .feedback-section {
   max-width: 600px;
-  margin: 0 auto 2rem;
+  margin: 2rem auto;
+  animation: fadeIn 0.5s ease-out;
   
   .feedback-card {
-    @include card-style;
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     display: flex;
     align-items: center;
     gap: 1rem;
-    text-align: left;
     
     &.correct {
-      border-left: 4px solid $success-color;
-      background: linear-gradient(90deg, rgba(76, 175, 80, 0.1), white);
+      border-left: 4px solid $success;
+      background: linear-gradient(90deg, rgba($success, 0.1), white);
     }
     
     &.incorrect {
-      border-left: 4px solid $error-color;
-      background: linear-gradient(90deg, rgba(255, 107, 107, 0.1), white);
+      border-left: 4px solid $error;
+      background: linear-gradient(90deg, rgba($error, 0.1), white);
     }
     
     .feedback-icon {
@@ -263,65 +601,27 @@ $shadow-color: rgba(0, 0, 0, 0.1);
       justify-content: center;
       font-size: 1.5rem;
       font-weight: bold;
-      
-      span {
-        color: white;
-      }
+      color: white;
     }
     
     &.correct .feedback-icon {
-      background: $success-color;
+      background: $success;
     }
     
     &.incorrect .feedback-icon {
-      background: $error-color;
+      background: $error;
     }
     
     .feedback-message {
       margin: 0;
       font-size: 1.1rem;
-      color: $text-color;
+      color: $secondary;
+      font-weight: 500;
       line-height: 1.5;
     }
   }
 }
 
-// Botones de acción
-.action-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  max-width: 600px;
-  margin: 0 auto;
-  flex-wrap: wrap;
-  
-  .btn {
-    flex: 1;
-    min-width: 120px;
-    
-    &.btn-primary {
-      @include button-style($primary-color);
-    }
-    
-    &.btn-secondary {
-      @include button-style(#6c757d);
-    }
-    
-    &.btn-success {
-      @include button-style($success-color);
-    }
-  }
-  
-  @media (max-width: 480px) {
-    flex-direction: column;
-    
-    .btn {
-      width: 100%;
-    }
-  }
-}
-
-// Animaciones
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -333,41 +633,171 @@ $shadow-color: rgba(0, 0, 0, 0.1);
   }
 }
 
-.feedback-section {
-  animation: fadeIn 0.5s ease-out;
-}
+// =============================================================================
+// ACTION BUTTONS
+// =============================================================================
 
-// Responsive adjustments
-@media (max-width: 768px) {
-  .exercise-container {
-    padding: 1rem;
-  }
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  max-width: 600px;
+  margin: 2rem auto 0;
+  flex-wrap: wrap;
   
-  .chart-section .chart-container {
-    height: 300px;
-  }
-  
-  .data-section .data-table {
-    font-size: 0.8rem;
+  .btn {
+    flex: 1;
+    min-width: 140px;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
     
-    th, td {
-      padding: 0.5rem;
+    &.btn-primary {
+      background: $primary;
+      color: white;
+      
+      &:hover:not(:disabled) {
+        background: darken($primary, 10%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba($primary, 0.3);
+      }
+    }
+    
+    &.btn-secondary {
+      background: #6c757d;
+      color: white;
+      
+      &:hover:not(:disabled) {
+        background: darken(#6c757d, 10%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(#6c757d, 0.3);
+      }
+    }
+    
+    &.btn-success {
+      background: $success;
+      color: white;
+      
+      &:hover:not(:disabled) {
+        background: darken($success, 10%);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba($success, 0.3);
+      }
+    }
+    
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    flex-direction: column;
+    
+    .btn {
+      width: 100%;
+      min-width: auto;
     }
   }
 }
 
-// Accesibilidad
-@media (prefers-reduced-motion: reduce) {
-  .btn:hover {
-    transform: none;
+// =============================================================================
+// RESPONSIVE DESIGN
+// =============================================================================
+
+@media (max-width: 768px) {
+  .question-view {
+    padding: 1rem;
   }
   
-  .feedback-section {
-    animation: none;
+  .emoji-area {
+    width: 95%;
+    height: 50vh;
+  }
+  
+  .exercise-view {
+    padding: 0.5rem;
+  }
+  
+  .exercise-content {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .chart-section,
+  .table-section {
+    padding: 1rem;
+  }
+  
+  .chart-container {
+    height: 300px !important;
+  }
+  
+  .data-table {
+    font-size: 0.9rem;
+    
+    th, td {
+      padding: 0.75rem;
+    }
+  }
+  
+  .emoji-cell {
+    .emoji-display {
+      font-size: 1.5rem;
+    }
+    
+    .emoji-name {
+      font-size: 1rem;
+    }
+  }
+  
+  .value-container {
+    .value-input {
+      width: 70px;
+      font-size: 0.9rem;
+    }
   }
 }
 
-// Estados de carga
+// =============================================================================
+// ACCESSIBILITY AND MOTION
+// =============================================================================
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .btn:hover {
+    transform: none !important;
+  }
+}
+
+// =============================================================================
+// STATES AND INTERACTIONS
+// =============================================================================
+
+.emoji-item {
+  &[style*="scale(1.1)"] {
+    z-index: 10;
+  }
+}
+
+.value-input {
+  &:focus {
+    z-index: 2;
+  }
+}
+
+// Loading state
 .loading {
   .chart-canvas {
     background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
