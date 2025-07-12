@@ -83,6 +83,12 @@ export class InteractiveChartExerciseComponent implements OnInit, AfterViewInit,
   dragCellIndex = -1;
   private dragStartY = 0;
   private dragCurrentValue = 0;
+  
+  // Estado del drag en barras del canvas
+  isDraggingBar = false;
+  dragBarIndex = -1;
+  private barDragStartY = 0;
+  private barDragCurrentValue = 0;
 
   // Configuración de tamaños
   private readonly ADULT_SIZE = 52;
@@ -363,11 +369,17 @@ export class InteractiveChartExerciseComponent implements OnInit, AfterViewInit,
     
     const container = this.canvas.parentElement!;
     this.canvas.width = container.clientWidth;
-    this.canvas.height = 400;
+    this.canvas.height = 500;
     
     this.updateCanvasRect();
     this.calculateDimensions();
     this.drawChart();
+    
+    // Agregar listeners para el arrastre en las barras
+    this.canvas.addEventListener('mousedown', this.onCanvasMouseDown.bind(this));
+    this.canvas.addEventListener('mousemove', this.onCanvasMouseMove.bind(this));
+    this.canvas.addEventListener('mouseup', this.onCanvasMouseUp.bind(this));
+    this.canvas.addEventListener('mouseleave', this.onCanvasMouseUp.bind(this));
   }
 
   private updateCanvasRect(): void {
@@ -410,10 +422,10 @@ export class InteractiveChartExerciseComponent implements OnInit, AfterViewInit,
 
   private drawGrid(maxValue: number): void {
     this.ctx.strokeStyle = '#e5e7eb';
-    this.ctx.lineWidth = 1;
+    this.ctx.lineWidth = 0.5;
     
-    // Líneas horizontales cada 2 unidades
-    for (let i = 0; i <= maxValue; i += 2) {
+    // Líneas horizontales cada 1 unidad (exactas para cada valor)
+    for (let i = 0; i <= maxValue; i++) {
       const y = this.MARGIN.top + this.chartHeight - (i / maxValue) * this.chartHeight;
       this.ctx.beginPath();
       this.ctx.moveTo(this.MARGIN.left, y);
@@ -421,13 +433,35 @@ export class InteractiveChartExerciseComponent implements OnInit, AfterViewInit,
       this.ctx.stroke();
     }
     
-    // Líneas verticales
+    // Líneas verticales exactas basadas en las barras
     const barSpacing = this.chartWidth / this.config.items.length;
-    for (let i = 0; i <= this.config.items.length; i++) {
-      const x = this.MARGIN.left + i * barSpacing;
+    
+    // Líneas en los bordes izquierdo y derecho del área del gráfico
+    this.ctx.beginPath();
+    this.ctx.moveTo(this.MARGIN.left, this.MARGIN.top);
+    this.ctx.lineTo(this.MARGIN.left, this.MARGIN.top + this.chartHeight);
+    this.ctx.stroke();
+    
+    this.ctx.beginPath();
+    this.ctx.moveTo(this.MARGIN.left + this.chartWidth, this.MARGIN.top);
+    this.ctx.lineTo(this.MARGIN.left + this.chartWidth, this.MARGIN.top + this.chartHeight);
+    this.ctx.stroke();
+    
+    // Líneas en los bordes de cada barra
+    for (let i = 0; i < this.config.items.length; i++) {
+      const x = this.MARGIN.left + i * barSpacing + (barSpacing - this.barWidth) / 2;
+      const xEnd = x + this.barWidth;
+      
+      // Línea izquierda de la barra
       this.ctx.beginPath();
       this.ctx.moveTo(x, this.MARGIN.top);
       this.ctx.lineTo(x, this.MARGIN.top + this.chartHeight);
+      this.ctx.stroke();
+      
+      // Línea derecha de la barra
+      this.ctx.beginPath();
+      this.ctx.moveTo(xEnd, this.MARGIN.top);
+      this.ctx.lineTo(xEnd, this.MARGIN.top + this.chartHeight);
       this.ctx.stroke();
     }
   }
@@ -451,13 +485,20 @@ export class InteractiveChartExerciseComponent implements OnInit, AfterViewInit,
 
   private drawBars(maxValue: number): void {
     const barSpacing = this.chartWidth / this.config.items.length;
+    const minBarHeight = 20; // Altura mínima para barras con valor 0
     
     this.tableValues.forEach((value, index) => {
-      const barHeight = (value / maxValue) * this.chartHeight;
+      let barHeight = (value / maxValue) * this.chartHeight;
       const x = this.MARGIN.left + index * barSpacing + (barSpacing - this.barWidth) / 2;
-      const y = this.MARGIN.top + this.chartHeight - barHeight;
+      let y = this.MARGIN.top + this.chartHeight - barHeight;
       
-      // Dibujar barra
+      // Para valores 0, mostrar una barra mínima del color correspondiente
+      if (value === 0) {
+        barHeight = minBarHeight;
+        y = this.MARGIN.top + this.chartHeight - barHeight;
+      }
+      
+      // Dibujar barra principal
       this.ctx.fillStyle = this.config.items[index].color;
       this.ctx.fillRect(x, y, this.barWidth, barHeight);
       
@@ -466,11 +507,30 @@ export class InteractiveChartExerciseComponent implements OnInit, AfterViewInit,
       this.ctx.lineWidth = 1;
       this.ctx.strokeRect(x, y, this.barWidth, barHeight);
       
-      // Valor encima de la barra (offset -10px)
+      // Agregar handle de arrastre en la parte superior de la barra
+      const handleHeight = 8;
+      const handleY = y - handleHeight;
+      
+      // Fondo del handle
+      this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+      this.ctx.fillRect(x, handleY, this.barWidth, handleHeight);
+      
+      // Líneas del handle para indicar que es draggable
+      this.ctx.strokeStyle = '#fff';
+      this.ctx.lineWidth = 1;
+      for (let i = 0; i < 3; i++) {
+        const lineY = handleY + 2 + i * 2;
+        this.ctx.beginPath();
+        this.ctx.moveTo(x + 5, lineY);
+        this.ctx.lineTo(x + this.barWidth - 5, lineY);
+        this.ctx.stroke();
+      }
+      
+      // Valor encima del handle
       this.ctx.fillStyle = '#333';
       this.ctx.textAlign = 'center';
       this.ctx.font = 'bold 16px "DM Sans", sans-serif';
-      this.ctx.fillText(value.toString(), x + this.barWidth / 2, y - 10);
+      this.ctx.fillText(value.toString(), x + this.barWidth / 2, handleY - 5);
     });
   }
 
@@ -536,6 +596,20 @@ export class InteractiveChartExerciseComponent implements OnInit, AfterViewInit,
     this.drawChart();
   }
 
+  incrementValue(index: number): void {
+    if (this.tableValues[index] < 25) {
+      this.tableValues[index]++;
+      this.drawChart();
+    }
+  }
+
+  decrementValue(index: number): void {
+    if (this.tableValues[index] > 0) {
+      this.tableValues[index]--;
+      this.drawChart();
+    }
+  }
+
   // Métodos de cálculo
   getTotalCorrect(itemIndex: number): number {
     const item = this.config.items[itemIndex];
@@ -581,6 +655,97 @@ export class InteractiveChartExerciseComponent implements OnInit, AfterViewInit,
   private removeEventListeners(): void {
     document.removeEventListener('mousemove', this.onDocumentMouseMove.bind(this));
     document.removeEventListener('mouseup', this.onDocumentMouseUp.bind(this));
+    
+    // Remover listeners del canvas
+    if (this.canvas) {
+      this.canvas.removeEventListener('mousedown', this.onCanvasMouseDown.bind(this));
+      this.canvas.removeEventListener('mousemove', this.onCanvasMouseMove.bind(this));
+      this.canvas.removeEventListener('mouseup', this.onCanvasMouseUp.bind(this));
+      this.canvas.removeEventListener('mouseleave', this.onCanvasMouseUp.bind(this));
+    }
+  }
+
+  // Métodos para arrastre en las barras del canvas
+  private onCanvasMouseDown(event: MouseEvent): void {
+    if (!this.canvas) return;
+    
+    const rect = this.canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    
+    // Detectar si el clic está en una barra
+    const barIndex = this.getBarIndexAtPosition(x, y);
+    if (barIndex !== -1) {
+      this.isDraggingBar = true;
+      this.dragBarIndex = barIndex;
+      this.barDragStartY = y;
+      this.barDragCurrentValue = this.tableValues[barIndex];
+      this.canvas.style.cursor = 'ns-resize';
+    }
+  }
+
+  private onCanvasMouseMove(event: MouseEvent): void {
+    if (!this.canvas) return;
+    
+    const rect = this.canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    
+    if (this.isDraggingBar && this.dragBarIndex !== -1) {
+      // Calcular nuevo valor basado en el movimiento
+      const deltaY = this.barDragStartY - y; // Invertir para que arriba sea positivo
+      const maxValue = Math.max(...this.tableValues, 1) + 2;
+      const valueChange = Math.round(deltaY / (this.chartHeight / maxValue));
+      const newValue = Math.max(0, Math.min(25, this.barDragCurrentValue + valueChange));
+      
+      this.tableValues[this.dragBarIndex] = newValue;
+      this.drawChart();
+    } else {
+      // Cambiar cursor si está sobre una barra
+      const barIndex = this.getBarIndexAtPosition(x, y);
+      this.canvas.style.cursor = barIndex !== -1 ? 'ns-resize' : 'default';
+    }
+  }
+
+  private onCanvasMouseUp(): void {
+    if (this.isDraggingBar) {
+      this.isDraggingBar = false;
+      this.dragBarIndex = -1;
+      if (this.canvas) {
+        this.canvas.style.cursor = 'default';
+      }
+    }
+  }
+
+  private getBarIndexAtPosition(x: number, y: number): number {
+    const barSpacing = this.chartWidth / this.config.items.length;
+    const maxValue = Math.max(...this.tableValues, 1) + 2;
+    const minBarHeight = 20;
+    
+    for (let i = 0; i < this.config.items.length; i++) {
+      const value = this.tableValues[i];
+      let barHeight = (value / maxValue) * this.chartHeight;
+      const barX = this.MARGIN.left + i * barSpacing + (barSpacing - this.barWidth) / 2;
+      let barY = this.MARGIN.top + this.chartHeight - barHeight;
+      
+      // Ajustar para barras con valor 0
+      if (value === 0) {
+        barHeight = minBarHeight;
+        barY = this.MARGIN.top + this.chartHeight - barHeight;
+      }
+      
+      // Incluir el handle de arrastre
+      const handleHeight = 8;
+      const handleY = barY - handleHeight;
+      
+      // Verificar si el clic está en la barra o el handle
+      if (x >= barX && x <= barX + this.barWidth && 
+          y >= handleY && y <= this.MARGIN.top + this.chartHeight) {
+        return i;
+      }
+    }
+    
+    return -1;
   }
 
   // Listeners para scroll/touch navigation - TEMPORALMENTE DESACTIVADOS

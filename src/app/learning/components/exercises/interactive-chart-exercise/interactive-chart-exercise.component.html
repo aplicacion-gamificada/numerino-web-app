@@ -117,6 +117,20 @@
                            step="1"
                            [disabled]="!config.allowEdit">
                     
+                    <!-- Controles numéricos personalizados -->
+                    <div class="number-controls">
+                      <button class="number-btn" 
+                              (click)="incrementValue(i)"
+                              [disabled]="!config.allowEdit || tableValues[i] >= 25">
+                        ▲
+                      </button>
+                      <button class="number-btn" 
+                              (click)="decrementValue(i)"
+                              [disabled]="!config.allowEdit || tableValues[i] <= 0">
+                        ▼
+                      </button>
+                    </div>
+                    
                     <!-- Área de drag -->
                     <div class="drag-area" 
                          (mousedown)="onCellMouseDown($event, i)"
