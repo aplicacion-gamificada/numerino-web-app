@@ -7,9 +7,9 @@
     <p class="demo-subtitle">Selecciona un ejercicio para practicar</p>
   </div>
 
-  <!-- Ejercicios de Gráficos Interactivos -->
+  <!-- Ejercicios de Conteo Interactivo -->
   <div class="exercise-category">
-    <h2 class="category-title">📊 Gráficos Interactivos</h2>
+    <h2 class="category-title">🔢 Conteo Interactivo</h2>
     <div class="exercise-grid">
       <div 
         *ngFor="let config of chartExerciseConfigs" 
@@ -19,43 +19,47 @@
       <div class="card-header">
         <h3 class="card-title">{{ config.title }}</h3>
         <div class="card-badges">
-          <span class="badge badge-primary" *ngIf="config.allowTableEdit">Editable</span>
-          <span class="badge badge-secondary" *ngIf="config.showAdultsFilter">Filtro</span>
+          <span class="badge badge-primary" *ngIf="config.allowSliderEdit">Editable</span>
           <span class="badge badge-success" *ngIf="config.correctAnswers">Validación</span>
+          <span class="badge badge-info">{{ config.maxTotal }} máximo</span>
         </div>
       </div>
       
       <div class="card-content">
         <p class="card-instructions">{{ config.instructions }}</p>
         
-        <div class="chart-preview">
-          <div class="preview-bars">
+        <div class="counting-preview">
+          <div class="preview-items">
             <div 
-              *ngFor="let value of config.chartData.values; let i = index" 
-              class="preview-bar"
-              [style.height.%]="(value / config.chartData.maxValue) * 100"
-              [style.background-color]="config.chartData.colors[i]"
-            ></div>
-          </div>
-          <div class="preview-labels">
-            <span 
-              *ngFor="let category of config.chartData.categories" 
-              class="preview-label"
+              *ngFor="let item of config.items" 
+              class="preview-item-group"
             >
-              {{ category }}
-            </span>
+              <div class="item-symbols">
+                <span 
+                  *ngFor="let i of [].constructor(item.largeCount + item.smallCount)" 
+                  class="item-symbol"
+                  [style.color]="item.color"
+                >
+                  {{ item.symbol }}
+                </span>
+              </div>
+              <div class="item-label">{{ item.name }}</div>
+            </div>
+          </div>
+          <div class="preview-question">
+            <span class="question-text">{{ config.question }}</span>
           </div>
         </div>
       </div>
       
       <div class="card-footer">
         <div class="data-info">
-          <span class="data-count">{{ config.chartData.categories.length }} categorías</span>
-          <span class="max-value">Máximo: {{ config.chartData.maxValue }}</span>
+          <span class="data-count">{{ config.items.length }} tipos</span>
+          <span class="total-items">{{ getTotalItemsForConfig(config) }} elementos</span>
         </div>
         <div class="play-button">
           <span class="play-icon">▶</span>
-          <span class="play-text">Practicar</span>
+          <span class="play-text">Contar</span>
         </div>
       </div>
     </div>

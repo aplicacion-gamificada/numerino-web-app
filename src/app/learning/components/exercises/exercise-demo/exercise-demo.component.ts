@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { ChartExerciseConfig } from '../interactive-chart-exercise/interactive-chart-exercise.component';
+import { InteractiveChartExerciseConfig } from '../interactive-chart-exercise/interactive-chart-exercise.component';
 import { SequenceExerciseConfig } from '../sequence-analysis-exercise/sequence-analysis-exercise.component';
 import { ProbabilityExerciseConfig } from '../probability-simulator-exercise/probability-simulator-exercise.component';
 
@@ -15,64 +15,61 @@ import { ProbabilityExerciseConfig } from '../probability-simulator-exercise/pro
 export class ExerciseDemoComponent {
   
   // Configuraciones de ejercicios de gráficos
-  chartExerciseConfigs: ChartExerciseConfig[] = [
+  chartExerciseConfigs: InteractiveChartExerciseConfig[] = [
     {
-      id: 'pets-chart',
-      title: 'Mascotas Favoritas',
-      instructions: 'Construye un gráfico de barras que muestre las mascotas favoritas de los estudiantes. Arrastra las barras o edita los valores en la tabla.',
-      allowTableEdit: true,
-      showAdultsFilter: false,
-      chartData: {
-        categories: ['Perro', 'Gato', 'Conejo', 'Pájaro'],
-        values: [8, 6, 4, 10],
-        colors: ['#FFB366', '#66B3FF', '#66FF66', '#FF6666'],
-        maxValue: 14,
-        gridSize: 30
-      },
-      correctAnswers: [12, 8, 6, 14]
+      id: 'pets-counting',
+      title: 'Cuenta las Mascotas',
+      question: '¿Cuántas mascotas hay de cada tipo?',
+      instructions: 'Observa las mascotas dispersas y cuenta cuántas hay de cada tipo usando los deslizadores.',
+      allowSliderEdit: true,
+      maxTotal: 25,
+      items: [
+        { symbol: '🐶', name: 'Perros', largeCount: 6, smallCount: 3, color: '#FFB366' },
+        { symbol: '😺', name: 'Gatos', largeCount: 4, smallCount: 2, color: '#66B3FF' },
+        { symbol: '🐰', name: 'Conejos', largeCount: 3, smallCount: 4, color: '#66FF66' }
+      ],
+      correctAnswers: [9, 6, 7]
     },
     {
-      id: 'sports-chart',
-      title: 'Deportes Más Populares',
-      instructions: 'Analiza los datos de deportes más populares en tu escuela. Ajusta el gráfico para reflejar los valores correctos.',
-      allowTableEdit: true,
-      showAdultsFilter: false,
-      chartData: {
-        categories: ['Fútbol', 'Básquet', 'Voleibol', 'Natación', 'Tenis'],
-        values: [15, 12, 8, 6, 4],
-        colors: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7'],
-        maxValue: 20,
-        gridSize: 25
-      },
-      correctAnswers: [18, 14, 10, 8, 6]
+      id: 'animals-counting',
+      title: 'Animales de la Granja',
+      question: '¿Cuántos animales ves en la granja?',
+      instructions: 'Cuenta los animales grandes y pequeños y ajusta los valores con los deslizadores.',
+      allowSliderEdit: true,
+      maxTotal: 25,
+      items: [
+        { symbol: '🐄', name: 'Vacas', largeCount: 4, smallCount: 2, color: '#FF6B6B' },
+        { symbol: '🐖', name: 'Cerdos', largeCount: 3, smallCount: 3, color: '#4ECDC4' },
+        { symbol: '🐓', name: 'Gallinas', largeCount: 5, smallCount: 4, color: '#45B7D1' }
+      ],
+      correctAnswers: [6, 6, 9]
     },
     {
-      id: 'colors-chart',
-      title: 'Colores Favoritos',
-      instructions: 'Crea un gráfico que muestre los colores favoritos de la clase. Puedes filtrar solo los datos de adultos si es necesario.',
-      allowTableEdit: true,
-      showAdultsFilter: true,
-      chartData: {
-        categories: ['Azul', 'Rojo', 'Verde', 'Amarillo', 'Morado'],
-        values: [20, 15, 12, 8, 5],
-        colors: ['#3498DB', '#E74C3C', '#2ECC71', '#F1C40F', '#9B59B6'],
-        maxValue: 25,
-        gridSize: 20
-      }
+      id: 'toys-counting',
+      title: 'Juguetes del Salón',
+      question: '¿Cuántos juguetes hay de cada tipo?',
+      instructions: 'Observa los juguetes dispersos y cuenta cuántos hay de cada tipo.',
+      allowSliderEdit: true,
+      maxTotal: 25,
+      items: [
+        { symbol: '🧸', name: 'Ositos', largeCount: 5, smallCount: 3, color: '#FF9F43' },
+        { symbol: '🎈', name: 'Globos', largeCount: 4, smallCount: 4, color: '#10AC84' },
+        { symbol: '🎾', name: 'Pelotas', largeCount: 3, smallCount: 2, color: '#EE5A24' }
+      ],
+      correctAnswers: [8, 8, 5]
     },
     {
-      id: 'subjects-chart',
-      title: 'Materias Favoritas',
-      instructions: 'Representa las materias favoritas de los estudiantes. Este ejercicio solo permite ver los datos, no editarlos.',
-      allowTableEdit: false,
-      showAdultsFilter: false,
-      chartData: {
-        categories: ['Matemáticas', 'Ciencias', 'Historia', 'Arte', 'Educación Física'],
-        values: [14, 18, 10, 12, 16],
-        colors: ['#FF9F43', '#10AC84', '#EE5A24', '#F79F1F', '#5F27CD'],
-        maxValue: 20,
-        gridSize: 25
-      }
+      id: 'fruits-counting',
+      title: 'Frutas del Mercado',
+      question: '¿Cuántas frutas hay de cada tipo?',
+      instructions: 'Cuenta las frutas que ves y ajusta los valores. Este ejercicio es solo para observar.',
+      allowSliderEdit: false,
+      maxTotal: 25,
+      items: [
+        { symbol: '🍎', name: 'Manzanas', largeCount: 6, smallCount: 2, color: '#E74C3C' },
+        { symbol: '🍌', name: 'Bananas', largeCount: 4, smallCount: 3, color: '#F1C40F' },
+        { symbol: '🍊', name: 'Naranjas', largeCount: 3, smallCount: 4, color: '#FF8C00' }
+      ]
     }
   ];
 
@@ -185,9 +182,9 @@ export class ExerciseDemoComponent {
 
   constructor(private router: Router) {}
 
-  navigateToChartExercise(config: ChartExerciseConfig): void {
+  navigateToChartExercise(config: InteractiveChartExerciseConfig): void {
     // Guardamos la configuración en sessionStorage para pasarla al componente
-    sessionStorage.setItem('currentExerciseConfig', JSON.stringify(config));
+    sessionStorage.setItem('currentInteractiveExerciseConfig', JSON.stringify(config));
     this.router.navigate(['/exercise/interactive-chart', config.id]);
   }
 
@@ -228,6 +225,10 @@ export class ExerciseDemoComponent {
 
   getColorCount(colorNames: string[], targetColor: string): number {
     return colorNames.filter(name => name === targetColor).length;
+  }
+
+  getTotalItemsForConfig(config: InteractiveChartExerciseConfig): number {
+    return config.items.reduce((total, item) => total + item.largeCount + item.smallCount, 0);
   }
 
   goBack(): void {

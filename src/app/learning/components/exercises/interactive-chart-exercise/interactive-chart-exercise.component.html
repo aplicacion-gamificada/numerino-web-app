@@ -1,112 +1,155 @@
-<div class="exercise-container">
-  <!-- Header del ejercicio -->
-  <div class="exercise-header">
-    <button class="back-button" (click)="goBack()">
-      ← Volver
-    </button>
-    <h1 class="exercise-title">{{ config.title }}</h1>
-    <p class="exercise-instructions">{{ config.instructions }}</p>
+<div class="exercise-container" [class.white-background]="currentView === 'exercise'">
+  
+  <!-- Vista de Pregunta -->
+  <div class="question-view" 
+       #questionContainer
+       *ngIf="currentView === 'question'" 
+       [class.transitioning]="isTransitioning">
+    
+    <!-- Header -->
+    <div class="exercise-header">
+      <button class="back-button" (click)="goBack()">
+        ← Volver
+      </button>
+      <h1 class="exercise-title">{{ config.title }}</h1>
+    </div>
+
+    <!-- Pregunta principal -->
+    <div class="question-section">
+      <h2 class="question-text">{{ config.question }}</h2>
+      <p class="question-instructions">{{ config.instructions }}</p>
+    </div>
+
+    <!-- Área de elementos dispersos -->
+    <div class="elements-display">
+      <div class="elements-container">
+        <div *ngFor="let item of config.items; let itemIndex = index" 
+             class="item-group">
+          
+          <!-- Elementos de este tipo -->
+          <div *ngFor="let position of itemPositions.get(item.symbol); let posIndex = index"
+               class="element-item"
+               [style.left.%]="position.x"
+               [style.top.%]="position.y"
+               [style.font-size.px]="position.size"
+               [class.large-element]="position.isLarge"
+               [class.small-element]="!position.isLarge">
+            {{ item.symbol }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Botón para continuar -->
+    <div class="continue-section">
+      <button class="continue-button" (click)="startExercise()">
+        Listo para Responder
+      </button>
+    </div>
   </div>
 
-  <!-- Contenido principal -->
-  <div class="exercise-content">
-    <!-- Canvas del gráfico -->
-    <div class="chart-section">
-      <div class="chart-container">
-        <canvas #chartCanvas class="chart-canvas"></canvas>
+  <!-- Vista de Ejercicio -->
+  <div class="exercise-view" 
+       #exerciseContainer
+       *ngIf="currentView === 'exercise'" 
+       [class.transitioning]="isTransitioning">
+    
+    <!-- Header compacto -->
+    <div class="exercise-header compact">
+      <button class="back-button" (click)="goBack()">
+        ← Volver
+      </button>
+      <div class="compact-info">
+        <h3 class="compact-title">{{ config.title }}</h3>
+        <p class="compact-question" (click)="goBackToQuestion()">
+          {{ config.question }} <span class="view-hint">↑ Ver elementos</span>
+        </p>
       </div>
+    </div>
+
+    <!-- Área de sliders interactivos -->
+    <div class="sliders-section">
+      <div class="sliders-container">
+        <div class="file-explorer-background">
+          
+          <!-- Tabla de datos con sliders -->
+          <div class="data-table-container">
+            <div class="table-header">
+              <h3 class="table-title">Ajusta los valores</h3>
+              <span class="table-subtitle">Usa los deslizadores para contar</span>
+            </div>
+            
+            <div class="slider-rows">
+              <div *ngFor="let item of config.items; let i = index" 
+                   class="slider-row"
+                   [style.background-color]="item.color + '15'">
+                
+                <!-- Icono y nombre -->
+                <div class="row-info">
+                  <span class="item-symbol">{{ item.symbol }}</span>
+                  <span class="item-name">{{ item.name }}</span>
+                </div>
+                
+                <!-- Slider -->
+                <div class="slider-container">
+                  <input type="range" 
+                         class="custom-slider"
+                         [style.--slider-color]="item.color"
+                         [value]="sliderValues[i]"
+                         [min]="0"
+                         [max]="config.maxTotal"
+                         (input)="onSliderInput($event, i)"
+                         [class.zero-value]="sliderValues[i] === 0">
+                  
+                  <div class="slider-value">
+                    <span class="value-display">{{ sliderValues[i] }}</span>
+                    <span class="value-label">elementos</span>
+                  </div>
+                </div>
+                
+                <!-- Total correcto (oculto en modo normal) -->
+                <div class="correct-indicator" 
+                     [class.visible]="showFeedback">
+                  <span class="correct-value">{{ getTotalItems(i) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feedback -->
+    <div class="feedback-section" *ngIf="showFeedback">
+      <div class="feedback-card" 
+           [class.correct]="isCorrect" 
+           [class.incorrect]="!isCorrect">
+        <div class="feedback-icon">
+          <span *ngIf="isCorrect">✓</span>
+          <span *ngIf="!isCorrect">✗</span>
+        </div>
+        <p class="feedback-message">{{ feedbackMessage }}</p>
+      </div>
+    </div>
+
+    <!-- Botones de acción -->
+    <div class="action-buttons">
+      <button class="btn btn-secondary" 
+              (click)="resetExercise()">
+        Reiniciar
+      </button>
       
-      <!-- Filtro de adultos (si está habilitado) -->
-      <div class="filter-section" *ngIf="config.showAdultsFilter">
-        <label class="filter-label">
-          <input 
-            type="checkbox" 
-            [(ngModel)]="showAdultsOnly" 
-            (change)="onAdultsFilterChange()"
-            class="filter-checkbox"
-          />
-          <span class="filter-text">Mostrar solo adultos</span>
-        </label>
-      </div>
+      <button class="btn btn-primary" 
+              (click)="checkAnswer()"
+              [disabled]="showFeedback">
+        Verificar Respuesta
+      </button>
+      
+      <button *ngIf="isCompleted" 
+              class="btn btn-success" 
+              (click)="continueToNext()">
+        Continuar
+      </button>
     </div>
-
-    <!-- Tabla de datos -->
-    <div class="data-section">
-      <h3 class="data-title">Datos del Gráfico</h3>
-      <div class="data-table-container">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Categoría</th>
-              <th>Valor</th>
-              <th>Color</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let category of config.chartData.categories; let i = index">
-              <td class="category-cell">{{ category }}</td>
-              <td class="value-cell">
-                <input 
-                  *ngIf="config.allowTableEdit; else readOnlyValue"
-                  type="number" 
-                  [value]="config.chartData.values[i]"
-                  (input)="onInputChange($event, i)"
-                  min="0" 
-                  [max]="config.chartData.maxValue"
-                  class="value-input"
-                />
-                <ng-template #readOnlyValue>
-                  <span class="value-display">{{ config.chartData.values[i] }}</span>
-                </ng-template>
-              </td>
-              <td class="color-cell">
-                <div 
-                  class="color-indicator" 
-                  [style.background-color]="config.chartData.colors[i]"
-                ></div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <!-- Feedback y controles -->
-  <div class="feedback-section" *ngIf="showFeedback">
-    <div class="feedback-card" [class.correct]="isCorrect" [class.incorrect]="!isCorrect">
-      <div class="feedback-icon">
-        <span *ngIf="isCorrect">✓</span>
-        <span *ngIf="!isCorrect">✗</span>
-      </div>
-      <p class="feedback-message">{{ feedbackMessage }}</p>
-    </div>
-  </div>
-
-  <!-- Botones de acción -->
-  <div class="action-buttons">
-    <button 
-      class="btn btn-secondary" 
-      (click)="resetExercise()"
-      [disabled]="!showFeedback && !isCompleted"
-    >
-      Reiniciar
-    </button>
-    
-    <button 
-      class="btn btn-primary" 
-      (click)="checkAnswer()"
-      [disabled]="showFeedback"
-    >
-      Verificar Respuesta
-    </button>
-    
-    <button 
-      *ngIf="isCompleted" 
-      class="btn btn-success" 
-      (click)="continueToNext()"
-    >
-      Continuar
-    </button>
   </div>
 </div> 
