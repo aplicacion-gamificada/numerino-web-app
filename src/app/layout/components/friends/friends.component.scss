@@ -1,4 +1,139 @@
-:host {
-  display: block;
-  color: black;
+.friend-card {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  background-color: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  border: 1px solid #e0e0e0;
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  .avatar-container {
+    flex-shrink: 0;
+    margin-right: 16px;
+
+    .avatar {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid #e0e0e0;
+    }
+
+    .avatar-placeholder {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+      font-size: 1.1rem;
+      border: 2px solid #e0e0e0;
+    }
+  }
+
+  .friend-info {
+    flex: 1;
+    min-width: 0; // Para permitir que el texto se trunque
+
+    .friend-name {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #2c3e50;
+      margin: 0 0 4px 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .friend-block {
+      font-size: 0.9rem;
+      color: #7f8c8d;
+      margin: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  .friend-actions {
+    flex-shrink: 0;
+    margin-left: 12px;
+
+    .action-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 8px;
+      border-radius: 50%;
+      color: #95a5a6;
+      font-size: 1.2rem;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 36px;
+      height: 36px;
+
+      &:hover {
+        background-color: #f8f9fa;
+        color: #34495e;
+      }
+
+      &:focus {
+        outline: none;
+        box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.3);
+      }
+
+      .dots {
+        line-height: 1;
+      }
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .friend-card {
+    padding: 12px;
+
+    .avatar-container {
+      margin-right: 12px;
+
+      .avatar,
+      .avatar-placeholder {
+        width: 40px;
+        height: 40px;
+      }
+
+      .avatar-placeholder {
+        font-size: 1rem;
+      }
+    }
+
+    .friend-info {
+      .friend-name {
+        font-size: 1rem;
+      }
+
+      .friend-block {
+        font-size: 0.8rem;
+      }
+    }
+
+    .friend-actions {
+      .action-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 1rem;
+      }
+    }
+  }
 }

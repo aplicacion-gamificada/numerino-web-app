@@ -1,0 +1,26 @@
+<div class="friends-progress-container">
+  <div class="header">
+    <h2 class="title">Progreso de amigos</h2>
+  </div>
+
+  <div class="friends-list" *ngIf="!loading && !error">
+    <app-friends
+      *ngFor="let classmate of classmates; trackBy: trackByEmail"
+      [classmate]="classmate">
+    </app-friends>
+  </div>
+
+  <div class="loading" *ngIf="loading">
+    <div class="spinner"></div>
+    <p>Cargando amigos...</p>
+  </div>
+
+  <div class="error" *ngIf="error">
+    <p>Error al cargar los amigos. Inténtalo de nuevo.</p>
+    <button class="retry-btn" (click)="loadClassmates()">Reintentar</button>
+  </div>
+
+  <div class="empty" *ngIf="!loading && !error && classmates.length === 0">
+    <p>No tienes amigos agregados aún.</p>
+  </div>
+</div>

@@ -9,6 +9,8 @@ import { LearningService, Unit, SpecializationProgressDto, ModuleProgressDto } f
 import { ProgressService, CurrentProgress } from '../../../progress/services/progress.service';
 import { UserService } from '../../../auth/services/user.service';
 import { AuthService } from '../../../auth/services/auth-services.service';
+import { FriendsProgressComponent } from '../../../layout/friends-progress/friends-progress.component';
+import { StudentDetail } from '../../../auth/models/studentDetail.model';
 
 interface Section {
   title: string;
@@ -17,16 +19,20 @@ interface Section {
 
 @Component({
   selector: 'app-learing-cards',
-  imports: [FriendsComponent, ProgressBarComponent, SidebarMenuComponent, LearningCardComponent, CommonModule],
+  imports: [FriendsComponent, ProgressBarComponent, SidebarMenuComponent, LearningCardComponent, CommonModule, FriendsProgressComponent],
   templateUrl: './learing-cards.component.html',
   styleUrl: './learing-cards.component.scss'
 })
 export class LearingCardsComponent implements OnInit {
+  studentDetail: StudentDetail | null = null;
   sections: Section[] = [];
   isLoading = true;
   error: string | null = null;
   moduleId: number | null = null;
   moduleTitle: string = '';
+  studentName: string = '';
+  hasError = false;
+  errorMessage = '';
 
   constructor(
     private learningService: LearningService,
@@ -39,6 +45,7 @@ export class LearingCardsComponent implements OnInit {
 
   ngOnInit() {
     // Obtener el moduleId de la ruta
+    this.loadStudentData();
     this.route.paramMap.subscribe(params => {
       const moduleIdParam = params.get('moduleId');
       if (moduleIdParam) {
@@ -50,6 +57,23 @@ export class LearingCardsComponent implements OnInit {
       }
     });
   }
+
+  loadStudentData(): void {
+      this.isLoading = true;
+      this.userService.getProfile().subscribe({
+        next: (student: StudentDetail) => {
+          this.studentDetail = student;
+          this.studentName = student.fullName || student.firstName || '';
+          this.isLoading = false;
+        },
+        error: (err) => {
+          this.hasError = true;
+          this.errorMessage = 'No se pudo cargar el perfil del estudiante';
+          this.isLoading = false;
+          console.error('Error al cargar perfil:', err);
+        }
+      });
+    }
 
   private async loadModuleUnits() {
     try {

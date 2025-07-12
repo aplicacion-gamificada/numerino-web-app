@@ -27,6 +27,7 @@ export class UnitLearningPointsComponent implements OnInit {
   error: string | null = null;
   unitId: number | null = null;
   unitTitle: string = '';
+  studentName: string = '';
 
   constructor(
     private learningService: LearningService,

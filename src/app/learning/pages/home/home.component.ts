@@ -4,7 +4,6 @@ import { Router } from '@angular/router';
 import { forkJoin, of } from 'rxjs';
 import { catchError, finalize, map, switchMap } from 'rxjs/operators';
 
-import { FriendsComponent } from "../../../layout/components/friends/friends.component";
 import { ProgressBarComponent } from "../../../layout/components/progress-bar/progress-bar.component";
 import { SidebarMenuComponent } from "../../../layout/components/sidebar-menu/sidebar-menu.component";
 import { LearningBlock, BloqueCardComponent } from '../../components/bloque-card/bloque-card.component';
@@ -13,18 +12,17 @@ import { UserService } from '../../../auth/services/user.service';
 import { StudentDetail } from '../../../auth/models/studentDetail.model';
 import { LearningService, AssignedSpecializationDto, SpecializationProgressDto, ModuleProgressDto } from '../../services/learning.service';
 import { ProgressService } from '../../../progress/services/progress.service';
-import { NextAchievementComponent } from '../../../layout/components/next-achievement/next-achievement.component';
+import { FriendsProgressComponent } from '../../../layout/friends-progress/friends-progress.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
   imports: [
     CommonModule,
-    FriendsComponent,
     ProgressBarComponent,
     SidebarMenuComponent,
     BloqueCardComponent,
-    NextAchievementComponent
+    FriendsProgressComponent
   ],
   templateUrl: './home.component.html',
   styleUrl: './home.component.scss'

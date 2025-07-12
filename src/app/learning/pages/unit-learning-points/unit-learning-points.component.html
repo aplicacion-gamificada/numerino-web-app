@@ -8,7 +8,8 @@
     <div class="grid grid-rows-[auto_auto_1fr] grid-cols-[3fr_1fr] gap-0 overflow-y-scroll">
         <!-- Sección 2 (fila 1, columna completa) -->
         <div class="barra-superior">
-            <div class="saludo">¡Bienvenido Diego!</div>
+            <div class="saludo">¡Bienvenido/a {{ studentName || '...' }}!</div>
+            <input type="text" placeholder="Buscar Ficha..." class="buscador" />
         </div>
 
         <!-- Sección 3 (fila 2, columna completa) -->
