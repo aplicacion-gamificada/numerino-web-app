@@ -7,7 +7,7 @@
     <!-- Contenedor derecho (donde están 2 al 6) -->
     <div class="grid grid-rows-[auto_auto_1fr] grid-cols-[3fr_1fr] gap-0 overflow-y-scroll">
         <!-- Sección 2 (fila 1, columna completa) -->
-        <div class="barra-superior">
+        <div class="col-span-2 barra-superior">
             <div class="saludo">¡Bienvenido/a {{ studentName || '...' }}!</div>
             <input type="text" placeholder="Buscar Ficha..." class="buscador" />
         </div>
@@ -53,14 +53,10 @@
         </div>
 
         <!-- Contenedor para 5 y 6 -->
-        <div class="grid grid-rows-2">
-            <!-- Sección 5 -->
-            <div class="bg-red-200 p-4 flex items-center justify-center">
-                5
-            </div>
+        <div class="grid">
             <!-- Sección 6 -->
-            <div class="bg-purple-200 p-4 flex items-center justify-center">
-                <app-friends></app-friends>
+            <div class="bg-gray-100 p-4">
+                <app-friends-progress></app-friends-progress>
             </div>
         </div>
     </div>

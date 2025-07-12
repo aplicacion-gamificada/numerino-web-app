@@ -2,7 +2,7 @@
 @import '../../../shared/styles/colors';
 
 .barra-superior {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: white;
   padding: 1rem 2rem;
   display: flex;
   align-items: center;
@@ -10,8 +10,26 @@
   color: white;
   
   .saludo {
-    font-size: 1.5rem;
+    font-size: 34px;
     font-weight: 600;
+    color: $secondary;
+  }
+
+  .buscador {
+    padding: 10px 16px;
+    border: $secondary 1px solid;
+    border-radius: 25px;
+    color: $secondary;
+    min-width: 250px;
+
+    &::placeholder {
+      color: $secondary;
+    }
+
+    &:focus {
+      outline: none;
+      background: rgba($white, 0.3);
+    }
   }
 }
 

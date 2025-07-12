@@ -8,6 +8,8 @@ import { LearningCard, LearningCardComponent } from "../../components/learning-c
 import { LearningService, LearningPoint } from '../../services/learning.service';
 import { ProgressService, CurrentProgress } from '../../../progress/services/progress.service';
 import { UserService } from '../../../auth/services/user.service';
+import { StudentDetail } from '../../../auth/models/studentDetail.model';
+import { FriendsProgressComponent } from "../../../layout/friends-progress/friends-progress.component";
 
 interface Section {
   title: string;
@@ -17,17 +19,20 @@ interface Section {
 @Component({
   selector: 'app-unit-learning-points',
   standalone: true,
-  imports: [FriendsComponent, ProgressBarComponent, SidebarMenuComponent, LearningCardComponent, CommonModule],
+  imports: [FriendsComponent, ProgressBarComponent, SidebarMenuComponent, LearningCardComponent, CommonModule, FriendsProgressComponent],
   templateUrl: './unit-learning-points.component.html',
   styleUrl: './unit-learning-points.component.scss'
 })
 export class UnitLearningPointsComponent implements OnInit {
+  studentDetail: StudentDetail | null = null;
   sections: Section[] = [];
   isLoading = true;
   error: string | null = null;
   unitId: number | null = null;
   unitTitle: string = '';
   studentName: string = '';
+  hasError = false;
+  errorMessage = '';
 
   constructor(
     private learningService: LearningService,
@@ -38,6 +43,7 @@ export class UnitLearningPointsComponent implements OnInit {
   ) {}
 
   ngOnInit() {
+    this.loadStudentData();
     // Obtener el unitId de la ruta
     this.route.paramMap.subscribe(params => {
       const unitIdParam = params.get('unitId');
@@ -50,6 +56,23 @@ export class UnitLearningPointsComponent implements OnInit {
       }
     });
   }
+
+  loadStudentData(): void {
+        this.isLoading = true;
+        this.userService.getProfile().subscribe({
+          next: (student: StudentDetail) => {
+            this.studentDetail = student;
+            this.studentName = student.fullName || student.firstName || '';
+            this.isLoading = false;
+          },
+          error: (err) => {
+            this.hasError = true;
+            this.errorMessage = 'No se pudo cargar el perfil del estudiante';
+            this.isLoading = false;
+            console.error('Error al cargar perfil:', err);
+          }
+        });
+      }
 
   private async loadUnitLearningPoints() {
     try {
