@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { InteractiveChartExerciseConfig } from '../interactive-chart-exercise/interactive-chart-exercise.component';
+import { EmojiExerciseConfig } from '../interactive-chart-exercise/interactive-chart-exercise.component';
 import { SequenceExerciseConfig } from '../sequence-analysis-exercise/sequence-analysis-exercise.component';
 import { ProbabilityExerciseConfig } from '../probability-simulator-exercise/probability-simulator-exercise.component';
 
@@ -14,62 +14,63 @@ import { ProbabilityExerciseConfig } from '../probability-simulator-exercise/pro
 })
 export class ExerciseDemoComponent {
   
-  // Configuraciones de ejercicios de gráficos
-  chartExerciseConfigs: InteractiveChartExerciseConfig[] = [
+  // Configuraciones de ejercicios de conteo con emojis
+  emojiExerciseConfigs: EmojiExerciseConfig[] = [
     {
-      id: 'pets-counting',
-      title: 'Cuenta las Mascotas',
-      question: '¿Cuántas mascotas hay de cada tipo?',
-      instructions: 'Observa las mascotas dispersas y cuenta cuántas hay de cada tipo usando los deslizadores.',
-      allowSliderEdit: true,
+      id: 'animals-demo',
+      title: 'Cuenta los Animales',
+      question: '¿Cuántos animales hay de cada tipo?',
+      instructions: 'Observa los animales dispersos y cuenta cuántos hay de cada tipo. Arrastra las celdas o usa los controles numéricos.',
+      allowEdit: true,
       maxTotal: 25,
       items: [
-        { symbol: '🐶', name: 'Perros', largeCount: 6, smallCount: 3, color: '#FFB366' },
-        { symbol: '😺', name: 'Gatos', largeCount: 4, smallCount: 2, color: '#66B3FF' },
-        { symbol: '🐰', name: 'Conejos', largeCount: 3, smallCount: 4, color: '#66FF66' }
+        { emoji: '🐶', name: 'Perros', adults: 4, children: 2, color: '#FFB366' },
+        { emoji: '😺', name: 'Gatos', adults: 3, children: 3, color: '#66B3FF' },
+        { emoji: '🐰', name: 'Conejos', adults: 2, children: 3, color: '#66FF66' }
       ],
-      correctAnswers: [9, 6, 7]
+      correctAnswers: [6, 6, 5]
     },
     {
-      id: 'animals-counting',
-      title: 'Animales de la Granja',
-      question: '¿Cuántos animales ves en la granja?',
-      instructions: 'Cuenta los animales grandes y pequeños y ajusta los valores con los deslizadores.',
-      allowSliderEdit: true,
+      id: 'fruits-demo',
+      title: 'Cuenta las Frutas',
+      question: '¿Cuántas frutas observas?',
+      instructions: 'Identifica y cuenta las diferentes frutas. Usa los controles interactivos para registrar tu respuesta.',
+      allowEdit: true,
       maxTotal: 25,
       items: [
-        { symbol: '🐄', name: 'Vacas', largeCount: 4, smallCount: 2, color: '#FF6B6B' },
-        { symbol: '🐖', name: 'Cerdos', largeCount: 3, smallCount: 3, color: '#4ECDC4' },
-        { symbol: '🐓', name: 'Gallinas', largeCount: 5, smallCount: 4, color: '#45B7D1' }
+        { emoji: '🍎', name: 'Manzanas', adults: 5, children: 2, color: '#FF6B6B' },
+        { emoji: '🍌', name: 'Bananas', adults: 3, children: 4, color: '#FFE66D' },
+        { emoji: '🍇', name: 'Uvas', adults: 2, children: 3, color: '#9B59B6' }
       ],
-      correctAnswers: [6, 6, 9]
+      correctAnswers: [7, 7, 5]
     },
     {
-      id: 'toys-counting',
-      title: 'Juguetes del Salón',
-      question: '¿Cuántos juguetes hay de cada tipo?',
-      instructions: 'Observa los juguetes dispersos y cuenta cuántos hay de cada tipo.',
-      allowSliderEdit: true,
+      id: 'vehicles-demo',
+      title: 'Cuenta los Vehículos',
+      question: '¿Cuántos vehículos hay en total?',
+      instructions: 'Observa los diferentes tipos de vehículos y registra las cantidades correctas.',
+      allowEdit: true,
       maxTotal: 25,
       items: [
-        { symbol: '🧸', name: 'Ositos', largeCount: 5, smallCount: 3, color: '#FF9F43' },
-        { symbol: '🎈', name: 'Globos', largeCount: 4, smallCount: 4, color: '#10AC84' },
-        { symbol: '🎾', name: 'Pelotas', largeCount: 3, smallCount: 2, color: '#EE5A24' }
+        { emoji: '🚗', name: 'Autos', adults: 4, children: 1, color: '#4ECDC4' },
+        { emoji: '🚲', name: 'Bicicletas', adults: 3, children: 3, color: '#45B7D1' },
+        { emoji: '🛵', name: 'Motos', adults: 2, children: 2, color: '#96CEB4' }
       ],
-      correctAnswers: [8, 8, 5]
+      correctAnswers: [5, 6, 4]
     },
     {
-      id: 'fruits-counting',
-      title: 'Frutas del Mercado',
-      question: '¿Cuántas frutas hay de cada tipo?',
-      instructions: 'Cuenta las frutas que ves y ajusta los valores. Este ejercicio es solo para observar.',
-      allowSliderEdit: false,
+      id: 'sports-demo',
+      title: 'Cuenta los Elementos Deportivos',
+      question: '¿Cuántos elementos deportivos ves?',
+      instructions: 'Identifica los diferentes elementos deportivos y cuenta con precisión cada tipo.',
+      allowEdit: true,
       maxTotal: 25,
       items: [
-        { symbol: '🍎', name: 'Manzanas', largeCount: 6, smallCount: 2, color: '#E74C3C' },
-        { symbol: '🍌', name: 'Bananas', largeCount: 4, smallCount: 3, color: '#F1C40F' },
-        { symbol: '🍊', name: 'Naranjas', largeCount: 3, smallCount: 4, color: '#FF8C00' }
-      ]
+        { emoji: '⚽', name: 'Pelotas de Fútbol', adults: 6, children: 0, color: '#E17055' },
+        { emoji: '🏀', name: 'Pelotas de Básquet', adults: 3, children: 2, color: '#FDCB6E' },
+        { emoji: '🎾', name: 'Pelotas de Tenis', adults: 2, children: 4, color: '#A29BFE' }
+      ],
+      correctAnswers: [6, 5, 6]
     }
   ];
 
@@ -182,9 +183,9 @@ export class ExerciseDemoComponent {
 
   constructor(private router: Router) {}
 
-  navigateToChartExercise(config: InteractiveChartExerciseConfig): void {
+  navigateToEmojiExercise(config: EmojiExerciseConfig): void {
     // Guardamos la configuración en sessionStorage para pasarla al componente
-    sessionStorage.setItem('currentInteractiveExerciseConfig', JSON.stringify(config));
+    sessionStorage.setItem('currentEmojiExerciseConfig', JSON.stringify(config));
     this.router.navigate(['/exercise/interactive-chart', config.id]);
   }
 
@@ -225,10 +226,6 @@ export class ExerciseDemoComponent {
 
   getColorCount(colorNames: string[], targetColor: string): number {
     return colorNames.filter(name => name === targetColor).length;
-  }
-
-  getTotalItemsForConfig(config: InteractiveChartExerciseConfig): number {
-    return config.items.reduce((total, item) => total + item.largeCount + item.smallCount, 0);
   }
 
   goBack(): void {

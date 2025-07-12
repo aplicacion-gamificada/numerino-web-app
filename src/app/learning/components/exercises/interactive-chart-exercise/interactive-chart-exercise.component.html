@@ -1,120 +1,139 @@
-<div class="exercise-container" [class.white-background]="currentView === 'exercise'">
+<!-- Contenedor principal del ejercicio -->
+<div class="exercise-container" [class.transitioning]="isTransitioning">
   
   <!-- Vista de Pregunta -->
   <div class="question-view" 
        #questionContainer
-       *ngIf="currentView === 'question'" 
-       [class.transitioning]="isTransitioning">
+       *ngIf="currentView === 'question'"
+       [class.fade-out]="isTransitioning">
     
     <!-- Header -->
-    <div class="exercise-header">
+    <div class="question-header">
       <button class="back-button" (click)="goBack()">
         ← Volver
       </button>
-      <h1 class="exercise-title">{{ config.title }}</h1>
-    </div>
-
-    <!-- Pregunta principal -->
-    <div class="question-section">
-      <h2 class="question-text">{{ config.question }}</h2>
-      <p class="question-instructions">{{ config.instructions }}</p>
-    </div>
-
-    <!-- Área de elementos dispersos -->
-    <div class="elements-display">
-      <div class="elements-container">
-        <div *ngFor="let item of config.items; let itemIndex = index" 
-             class="item-group">
-          
-          <!-- Elementos de este tipo -->
-          <div *ngFor="let position of itemPositions.get(item.symbol); let posIndex = index"
-               class="element-item"
-               [style.left.%]="position.x"
-               [style.top.%]="position.y"
-               [style.font-size.px]="position.size"
-               [class.large-element]="position.isLarge"
-               [class.small-element]="!position.isLarge">
-            {{ item.symbol }}
-          </div>
-        </div>
+      <h1 class="question-title">{{ config.title }}</h1>
+      <p class="question-text">{{ config.question }}</p>
+      
+      <!-- Botones de demo para mostrar modularidad -->
+      <div class="demo-buttons">
+        <button class="demo-btn" (click)="loadAnimalsExercise()">�� Animales</button>
+        <button class="demo-btn" (click)="loadFruitsExercise()">🍎 Frutas</button>
+        <button class="demo-btn" (click)="loadVehiclesExercise()">🚗 Vehículos</button>
+        <button class="demo-btn" (click)="loadSportsExercise()">⚽ Deportes</button>
       </div>
     </div>
 
-    <!-- Botón para continuar -->
-    <div class="continue-section">
-      <button class="continue-button" (click)="startExercise()">
-        Listo para Responder
-      </button>
+    <!-- Contenedor de emojis dispersos -->
+    <div class="emoji-container">
+      <div class="emoji-area">
+        <!-- Emojis clickeables -->
+        <ng-container *ngFor="let item of config.items; let itemIndex = index">
+          <ng-container *ngFor="let emoji of emojiPositions; let emojiIndex = index">
+            <div *ngIf="emoji.id.includes(item.emoji)"
+                 class="emoji-item"
+                 [style]="getEmojiStyle(emoji)"
+                 (click)="onEmojiClick(emoji.id)">
+              {{ item.emoji }}
+            </div>
+            
+            <!-- Outline ring para emojis clickeados -->
+            <div *ngIf="emoji.id.includes(item.emoji) && emoji.isClicked"
+                 class="emoji-outline"
+                 [style]="getEmojiOutlineStyle(emoji, item.color)">
+            </div>
+          </ng-container>
+        </ng-container>
+      </div>
+      
+      <!-- Botón para iniciar ejercicio -->
+      <div class="start-button-container">
+        <button class="start-button" (click)="startExercise()">
+          Listo para responder
+        </button>
+      </div>
     </div>
   </div>
 
   <!-- Vista de Ejercicio -->
   <div class="exercise-view" 
        #exerciseContainer
-       *ngIf="currentView === 'exercise'" 
-       [class.transitioning]="isTransitioning">
+       *ngIf="currentView === 'exercise'"
+       [class.fade-in]="isTransitioning">
     
     <!-- Header compacto -->
-    <div class="exercise-header compact">
-      <button class="back-button" (click)="goBack()">
-        ← Volver
-      </button>
-      <div class="compact-info">
-        <h3 class="compact-title">{{ config.title }}</h3>
-        <p class="compact-question" (click)="goBackToQuestion()">
-          {{ config.question }} <span class="view-hint">↑ Ver elementos</span>
-        </p>
+    <div class="exercise-header">
+      <div class="back-to-question" (click)="goBackToQuestion()">
+        <span class="back-icon">↑</span>
+        <span class="back-text">Volver a la pregunta</span>
       </div>
+      <h2 class="exercise-title">{{ config.title }}</h2>
+      <p class="exercise-instructions">{{ config.instructions }}</p>
     </div>
 
-    <!-- Área de sliders interactivos -->
-    <div class="sliders-section">
-      <div class="sliders-container">
-        <div class="file-explorer-background">
-          
-          <!-- Tabla de datos con sliders -->
-          <div class="data-table-container">
-            <div class="table-header">
-              <h3 class="table-title">Ajusta los valores</h3>
-              <span class="table-subtitle">Usa los deslizadores para contar</span>
-            </div>
-            
-            <div class="slider-rows">
-              <div *ngFor="let item of config.items; let i = index" 
-                   class="slider-row"
-                   [style.background-color]="item.color + '15'">
+    <!-- Contenido principal del ejercicio -->
+    <div class="exercise-content">
+      
+      <!-- Sección del gráfico -->
+      <div class="chart-section">
+        <div class="chart-container">
+          <canvas #chartCanvas class="chart-canvas"></canvas>
+        </div>
+      </div>
+
+      <!-- Sección de la tabla interactiva -->
+      <div class="table-section">
+        <h3 class="table-title">Datos del Gráfico</h3>
+        
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th class="emoji-column">Emoji</th>
+                <th class="value-column">Cantidad</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let item of config.items; let i = index" 
+                  class="data-row" 
+                  [style.background-color]="item.color + '15'">
                 
-                <!-- Icono y nombre -->
-                <div class="row-info">
-                  <span class="item-symbol">{{ item.symbol }}</span>
-                  <span class="item-name">{{ item.name }}</span>
-                </div>
+                <!-- Columna de emoji -->
+                <td class="emoji-cell">
+                  <span class="emoji-display">{{ item.emoji }}</span>
+                  <span class="emoji-name">{{ item.name }}</span>
+                </td>
                 
-                <!-- Slider -->
-                <div class="slider-container">
-                  <input type="range" 
-                         class="custom-slider"
-                         [style.--slider-color]="item.color"
-                         [value]="sliderValues[i]"
-                         [min]="0"
-                         [max]="config.maxTotal"
-                         (input)="onSliderInput($event, i)"
-                         [class.zero-value]="sliderValues[i] === 0">
-                  
-                  <div class="slider-value">
-                    <span class="value-display">{{ sliderValues[i] }}</span>
-                    <span class="value-label">elementos</span>
+                <!-- Columna de valor arrastrables -->
+                <td class="value-cell">
+                  <div class="value-container">
+                    <!-- Input numérico -->
+                    <input type="number" 
+                           class="value-input"
+                           [value]="tableValues[i]"
+                           (input)="onNumberInputChange($event, i)"
+                           min="0" 
+                           max="25" 
+                           step="1"
+                           [disabled]="!config.allowEdit">
+                    
+                    <!-- Área de drag -->
+                    <div class="drag-area" 
+                         (mousedown)="onCellMouseDown($event, i)"
+                         [class.dragging]="isDragging && dragCellIndex === i">
+                      <span class="drag-handle">⋮⋮</span>
+                    </div>
                   </div>
-                </div>
-                
-                <!-- Total correcto (oculto en modo normal) -->
-                <div class="correct-indicator" 
-                     [class.visible]="showFeedback">
-                  <span class="correct-value">{{ getTotalItems(i) }}</span>
-                </div>
-              </div>
-            </div>
-          </div>
+                  
+                  <!-- Indicador de respuesta correcta (oculto por defecto) -->
+                  <div class="correct-indicator" 
+                       *ngIf="showFeedback && isCorrect">
+                    <span class="correct-value">{{ getTotalCorrect(i) }}</span>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -135,7 +154,8 @@
     <!-- Botones de acción -->
     <div class="action-buttons">
       <button class="btn btn-secondary" 
-              (click)="resetExercise()">
+              (click)="resetExercise()"
+              [disabled]="!showFeedback && !isCompleted">
         Reiniciar
       </button>
       

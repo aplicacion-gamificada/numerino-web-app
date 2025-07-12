@@ -7,47 +7,39 @@
     <p class="demo-subtitle">Selecciona un ejercicio para practicar</p>
   </div>
 
-  <!-- Ejercicios de Conteo Interactivo -->
+  <!-- Ejercicios de Conteo con Emojis -->
   <div class="exercise-category">
-    <h2 class="category-title">🔢 Conteo Interactivo</h2>
+    <h2 class="category-title">🔢 Conteo Interactivo con Emojis</h2>
     <div class="exercise-grid">
       <div 
-        *ngFor="let config of chartExerciseConfigs" 
-        class="exercise-card"
-        (click)="navigateToChartExercise(config)"
+        *ngFor="let config of emojiExerciseConfigs" 
+        class="exercise-card emoji-card"
+        (click)="navigateToEmojiExercise(config)"
       >
       <div class="card-header">
         <h3 class="card-title">{{ config.title }}</h3>
         <div class="card-badges">
-          <span class="badge badge-primary" *ngIf="config.allowSliderEdit">Editable</span>
+          <span class="badge badge-primary" *ngIf="config.allowEdit">Editable</span>
+          <span class="badge badge-secondary">Interactive</span>
           <span class="badge badge-success" *ngIf="config.correctAnswers">Validación</span>
-          <span class="badge badge-info">{{ config.maxTotal }} máximo</span>
         </div>
       </div>
       
       <div class="card-content">
         <p class="card-instructions">{{ config.instructions }}</p>
+        <p class="card-question">{{ config.question }}</p>
         
-        <div class="counting-preview">
-          <div class="preview-items">
+        <div class="emoji-preview">
+          <div class="preview-emojis">
             <div 
-              *ngFor="let item of config.items" 
-              class="preview-item-group"
+              *ngFor="let item of config.items; let i = index" 
+              class="emoji-preview-item"
+              [style.background-color]="item.color + '20'"
             >
-              <div class="item-symbols">
-                <span 
-                  *ngFor="let i of [].constructor(item.largeCount + item.smallCount)" 
-                  class="item-symbol"
-                  [style.color]="item.color"
-                >
-                  {{ item.symbol }}
-                </span>
-              </div>
-              <div class="item-label">{{ item.name }}</div>
+              <span class="emoji-display">{{ item.emoji }}</span>
+              <span class="emoji-name">{{ item.name }}</span>
+              <span class="emoji-total">{{ item.adults + item.children }}</span>
             </div>
-          </div>
-          <div class="preview-question">
-            <span class="question-text">{{ config.question }}</span>
           </div>
         </div>
       </div>
@@ -55,10 +47,10 @@
       <div class="card-footer">
         <div class="data-info">
           <span class="data-count">{{ config.items.length }} tipos</span>
-          <span class="total-items">{{ getTotalItemsForConfig(config) }} elementos</span>
+          <span class="max-value">Máximo: {{ config.maxTotal }}</span>
         </div>
         <div class="play-button">
-          <span class="play-icon">▶</span>
+          <span class="play-icon">🎯</span>
           <span class="play-text">Contar</span>
         </div>
       </div>
