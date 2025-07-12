@@ -2,13 +2,18 @@
 
 // Si no funciona, intenta:
 // @import 'src/app/shared/styles/colors';
-
+:host {
+  font-family: "DM Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+  font-style: normal;
+}
 .learning-block {
   position: relative;
   width: 280px;
   min-width: 280px;
   max-width: 280px;
-  margin: 20px 0;
+  margin: 10px 0;
   cursor: pointer;
   transition: all 0.3s ease;
 
@@ -79,7 +84,7 @@
     align-items: center;
     justify-content: center;
     margin: 0 auto 16px;
-    font-size: 24px;
+    font-size: 40px;
     font-weight: bold;
     color: $white;
     border: 3px solid rgba($white, 0.3);
@@ -92,7 +97,7 @@
     margin-bottom: 16px;
 
     .block-title {
-      font-size: 16px;
+      font-size: 28px;
       font-weight: 600;
       margin: 0 0 8px 0;
       color: $white;
@@ -108,7 +113,7 @@
     }
 
     .block-subtitle {
-      font-size: 12px;
+      font-size: 20px;
       margin: 0;
       color: rgba($white, 0.9);
       line-height: 1.4;
@@ -140,7 +145,7 @@
 
   // Texto de progreso
   .progress-text {
-    font-size: 11px;
+    font-size: 15px;
     color: rgba($white, 0.9);
     font-weight: 500;
     position: relative;

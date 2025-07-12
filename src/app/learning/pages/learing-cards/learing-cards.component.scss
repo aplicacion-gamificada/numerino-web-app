@@ -1,3 +1,5 @@
+@import '../../../shared/styles/colors';
+
 :host {
     display: block;
     height: 100vh;
@@ -21,6 +23,23 @@
         font-weight: 500;
         color: #333;
     }
+    
+    .buscador {
+    padding: 10px 16px;
+    border: $secondary 1px solid;
+    border-radius: 25px;
+    color: $secondary;
+    min-width: 250px;
+
+    &::placeholder {
+      color: $secondary;
+    }
+
+    &:focus {
+      outline: none;
+      background: rgba($white, 0.3);
+    }
+  }
 }
 
 .section-title {
