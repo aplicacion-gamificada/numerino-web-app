@@ -7,55 +7,51 @@
     <p class="demo-subtitle">Selecciona un ejercicio para practicar</p>
   </div>
 
-  <!-- Ejercicios de Gráficos Interactivos -->
+  <!-- Ejercicios de Conteo con Emojis -->
   <div class="exercise-category">
-    <h2 class="category-title">📊 Gráficos Interactivos</h2>
+    <h2 class="category-title">🔢 Conteo Interactivo con Emojis</h2>
     <div class="exercise-grid">
       <div 
-        *ngFor="let config of chartExerciseConfigs" 
-        class="exercise-card"
-        (click)="navigateToChartExercise(config)"
+        *ngFor="let config of emojiExerciseConfigs" 
+        class="exercise-card emoji-card"
+        (click)="navigateToEmojiExercise(config)"
       >
       <div class="card-header">
         <h3 class="card-title">{{ config.title }}</h3>
         <div class="card-badges">
-          <span class="badge badge-primary" *ngIf="config.allowTableEdit">Editable</span>
-          <span class="badge badge-secondary" *ngIf="config.showAdultsFilter">Filtro</span>
+          <span class="badge badge-primary" *ngIf="config.allowEdit">Editable</span>
+          <span class="badge badge-secondary">Interactive</span>
           <span class="badge badge-success" *ngIf="config.correctAnswers">Validación</span>
         </div>
       </div>
       
       <div class="card-content">
         <p class="card-instructions">{{ config.instructions }}</p>
+        <p class="card-question">{{ config.question }}</p>
         
-        <div class="chart-preview">
-          <div class="preview-bars">
+        <div class="emoji-preview">
+          <div class="preview-emojis">
             <div 
-              *ngFor="let value of config.chartData.values; let i = index" 
-              class="preview-bar"
-              [style.height.%]="(value / config.chartData.maxValue) * 100"
-              [style.background-color]="config.chartData.colors[i]"
-            ></div>
-          </div>
-          <div class="preview-labels">
-            <span 
-              *ngFor="let category of config.chartData.categories" 
-              class="preview-label"
+              *ngFor="let item of config.items; let i = index" 
+              class="emoji-preview-item"
+              [style.background-color]="item.color + '20'"
             >
-              {{ category }}
-            </span>
+              <span class="emoji-display">{{ item.emoji }}</span>
+              <span class="emoji-name">{{ item.name }}</span>
+              <span class="emoji-total">{{ item.adults + item.children }}</span>
+            </div>
           </div>
         </div>
       </div>
       
       <div class="card-footer">
         <div class="data-info">
-          <span class="data-count">{{ config.chartData.categories.length }} categorías</span>
-          <span class="max-value">Máximo: {{ config.chartData.maxValue }}</span>
+          <span class="data-count">{{ config.items.length }} tipos</span>
+          <span class="max-value">Máximo: {{ config.maxTotal }}</span>
         </div>
         <div class="play-button">
-          <span class="play-icon">▶</span>
-          <span class="play-text">Practicar</span>
+          <span class="play-icon">🎯</span>
+          <span class="play-text">Contar</span>
         </div>
       </div>
     </div>

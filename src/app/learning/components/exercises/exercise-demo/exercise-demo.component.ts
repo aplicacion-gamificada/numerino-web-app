@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { ChartExerciseConfig } from '../interactive-chart-exercise/interactive-chart-exercise.component';
+import { EmojiExerciseConfig } from '../interactive-chart-exercise/interactive-chart-exercise.component';
 import { SequenceExerciseConfig } from '../sequence-analysis-exercise/sequence-analysis-exercise.component';
 import { ProbabilityExerciseConfig } from '../probability-simulator-exercise/probability-simulator-exercise.component';
 
@@ -14,65 +14,63 @@ import { ProbabilityExerciseConfig } from '../probability-simulator-exercise/pro
 })
 export class ExerciseDemoComponent {
   
-  // Configuraciones de ejercicios de gráficos
-  chartExerciseConfigs: ChartExerciseConfig[] = [
+  // Configuraciones de ejercicios de conteo con emojis
+  emojiExerciseConfigs: EmojiExerciseConfig[] = [
     {
-      id: 'pets-chart',
-      title: 'Mascotas Favoritas',
-      instructions: 'Construye un gráfico de barras que muestre las mascotas favoritas de los estudiantes. Arrastra las barras o edita los valores en la tabla.',
-      allowTableEdit: true,
-      showAdultsFilter: false,
-      chartData: {
-        categories: ['Perro', 'Gato', 'Conejo', 'Pájaro'],
-        values: [8, 6, 4, 10],
-        colors: ['#FFB366', '#66B3FF', '#66FF66', '#FF6666'],
-        maxValue: 14,
-        gridSize: 30
-      },
-      correctAnswers: [12, 8, 6, 14]
+      id: 'animals-demo',
+      title: 'Cuenta los Animales',
+      question: '¿Cuántos animales hay de cada tipo?',
+      instructions: 'Observa los animales dispersos y cuenta cuántos hay de cada tipo. Arrastra las celdas o usa los controles numéricos.',
+      allowEdit: true,
+      maxTotal: 25,
+      items: [
+        { emoji: '🐶', name: 'Perros', adults: 4, children: 2, color: '#FFB366' },
+        { emoji: '😺', name: 'Gatos', adults: 3, children: 3, color: '#66B3FF' },
+        { emoji: '🐰', name: 'Conejos', adults: 2, children: 3, color: '#66FF66' }
+      ],
+      correctAnswers: [6, 6, 5]
     },
     {
-      id: 'sports-chart',
-      title: 'Deportes Más Populares',
-      instructions: 'Analiza los datos de deportes más populares en tu escuela. Ajusta el gráfico para reflejar los valores correctos.',
-      allowTableEdit: true,
-      showAdultsFilter: false,
-      chartData: {
-        categories: ['Fútbol', 'Básquet', 'Voleibol', 'Natación', 'Tenis'],
-        values: [15, 12, 8, 6, 4],
-        colors: ['#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7'],
-        maxValue: 20,
-        gridSize: 25
-      },
-      correctAnswers: [18, 14, 10, 8, 6]
+      id: 'fruits-demo',
+      title: 'Cuenta las Frutas',
+      question: '¿Cuántas frutas observas?',
+      instructions: 'Identifica y cuenta las diferentes frutas. Usa los controles interactivos para registrar tu respuesta.',
+      allowEdit: true,
+      maxTotal: 25,
+      items: [
+        { emoji: '🍎', name: 'Manzanas', adults: 5, children: 2, color: '#FF6B6B' },
+        { emoji: '🍌', name: 'Bananas', adults: 3, children: 4, color: '#FFE66D' },
+        { emoji: '🍇', name: 'Uvas', adults: 2, children: 3, color: '#9B59B6' }
+      ],
+      correctAnswers: [7, 7, 5]
     },
     {
-      id: 'colors-chart',
-      title: 'Colores Favoritos',
-      instructions: 'Crea un gráfico que muestre los colores favoritos de la clase. Puedes filtrar solo los datos de adultos si es necesario.',
-      allowTableEdit: true,
-      showAdultsFilter: true,
-      chartData: {
-        categories: ['Azul', 'Rojo', 'Verde', 'Amarillo', 'Morado'],
-        values: [20, 15, 12, 8, 5],
-        colors: ['#3498DB', '#E74C3C', '#2ECC71', '#F1C40F', '#9B59B6'],
-        maxValue: 25,
-        gridSize: 20
-      }
+      id: 'vehicles-demo',
+      title: 'Cuenta los Vehículos',
+      question: '¿Cuántos vehículos hay en total?',
+      instructions: 'Observa los diferentes tipos de vehículos y registra las cantidades correctas.',
+      allowEdit: true,
+      maxTotal: 25,
+      items: [
+        { emoji: '🚗', name: 'Autos', adults: 4, children: 1, color: '#4ECDC4' },
+        { emoji: '🚲', name: 'Bicicletas', adults: 3, children: 3, color: '#45B7D1' },
+        { emoji: '🛵', name: 'Motos', adults: 2, children: 2, color: '#96CEB4' }
+      ],
+      correctAnswers: [5, 6, 4]
     },
     {
-      id: 'subjects-chart',
-      title: 'Materias Favoritas',
-      instructions: 'Representa las materias favoritas de los estudiantes. Este ejercicio solo permite ver los datos, no editarlos.',
-      allowTableEdit: false,
-      showAdultsFilter: false,
-      chartData: {
-        categories: ['Matemáticas', 'Ciencias', 'Historia', 'Arte', 'Educación Física'],
-        values: [14, 18, 10, 12, 16],
-        colors: ['#FF9F43', '#10AC84', '#EE5A24', '#F79F1F', '#5F27CD'],
-        maxValue: 20,
-        gridSize: 25
-      }
+      id: 'sports-demo',
+      title: 'Cuenta los Elementos Deportivos',
+      question: '¿Cuántos elementos deportivos ves?',
+      instructions: 'Identifica los diferentes elementos deportivos y cuenta con precisión cada tipo.',
+      allowEdit: true,
+      maxTotal: 25,
+      items: [
+        { emoji: '⚽', name: 'Pelotas de Fútbol', adults: 6, children: 0, color: '#E17055' },
+        { emoji: '🏀', name: 'Pelotas de Básquet', adults: 3, children: 2, color: '#FDCB6E' },
+        { emoji: '🎾', name: 'Pelotas de Tenis', adults: 2, children: 4, color: '#A29BFE' }
+      ],
+      correctAnswers: [6, 5, 6]
     }
   ];
 
@@ -185,9 +183,9 @@ export class ExerciseDemoComponent {
 
   constructor(private router: Router) {}
 
-  navigateToChartExercise(config: ChartExerciseConfig): void {
+  navigateToEmojiExercise(config: EmojiExerciseConfig): void {
     // Guardamos la configuración en sessionStorage para pasarla al componente
-    sessionStorage.setItem('currentExerciseConfig', JSON.stringify(config));
+    sessionStorage.setItem('currentEmojiExerciseConfig', JSON.stringify(config));
     this.router.navigate(['/exercise/interactive-chart', config.id]);
   }
 

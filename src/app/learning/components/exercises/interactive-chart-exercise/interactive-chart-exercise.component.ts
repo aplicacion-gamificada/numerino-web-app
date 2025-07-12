@@ -1,24 +1,35 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, HostListener, AfterViewInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 
-export interface ChartData {
-  categories: string[];
-  values: number[];
-  colors: string[];
-  maxValue: number;
-  gridSize: number;
+// Interfaces genéricas para ejercicios de conteo con emojis
+export interface EmojiItemData {
+  emoji: string;
+  name: string;
+  adults: number;
+  children: number;
+  color: string;
 }
 
-export interface ChartExerciseConfig {
+export interface EmojiPosition {
+  x: number;
+  y: number;
+  size: number;
+  isAdult: boolean;
+  isClicked: boolean;
+  id: string;
+}
+
+export interface EmojiExerciseConfig {
   id: string;
   title: string;
+  question: string;
   instructions: string;
-  chartData: ChartData;
+  items: EmojiItemData[];
+  maxTotal: number;
   correctAnswers?: number[];
-  allowTableEdit: boolean;
-  showAdultsFilter?: boolean;
+  allowEdit: boolean;
 }
 
 @Component({
@@ -30,45 +41,63 @@ export interface ChartExerciseConfig {
 })
 export class InteractiveChartExerciseComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('chartCanvas', { static: false }) canvasRef!: ElementRef<HTMLCanvasElement>;
-  
+  @ViewChild('questionContainer', { static: false }) questionContainer!: ElementRef;
+  @ViewChild('exerciseContainer', { static: false }) exerciseContainer!: ElementRef;
+
   // Configuración del ejercicio
-  config: ChartExerciseConfig = {
-    id: 'chart-exercise-1',
-    title: 'Construye el Gráfico de Barras',
-    instructions: 'Arrastra las barras para ajustar los valores según los datos de la tabla. Puedes también editar los valores directamente en la tabla.',
-    allowTableEdit: true,
-    showAdultsFilter: false,
-    chartData: {
-      categories: ['Perro', 'Gato', 'Conejo', 'Pájaro'],
-      values: [8, 6, 4, 10],
-      colors: ['#FFB366', '#66B3FF', '#66FF66', '#FF6666'],
-      maxValue: 14,
-      gridSize: 30
-    }
+  config: EmojiExerciseConfig = {
+    id: 'emoji-counting-1',
+    title: 'Cuenta los Emojis',
+    question: '¿Cuántos hay de cada tipo?',
+    instructions: 'Observa los emojis y ajusta los valores arrastrando las celdas o usando los controles numéricos.',
+    allowEdit: true,
+    maxTotal: 25,
+    items: [
+      { emoji: '🐶', name: 'Perros', adults: 4, children: 2, color: '#FFB366' },
+      { emoji: '😺', name: 'Gatos', adults: 3, children: 3, color: '#66B3FF' },
+      { emoji: '🐰', name: 'Conejos', adults: 2, children: 3, color: '#66FF66' }
+    ]
   };
 
-  // Estado del canvas
+  // Estado del ejercicio
+  currentView: 'question' | 'exercise' = 'question';
+  emojiPositions: EmojiPosition[] = [];
+  tableValues: number[] = [];
+  isCompleted = false;
+  showFeedback = false;
+  feedbackMessage = '';
+  isCorrect = false;
+  isTransitioning = false;
+
+  // Estado del canvas y gráfico
   private canvas!: HTMLCanvasElement;
   private ctx!: CanvasRenderingContext2D;
-  private isDragging = false;
-  private dragBarIndex = -1;
   private canvasRect!: DOMRect;
-
-  // Dimensiones del gráfico
   private readonly MARGIN = { top: 40, right: 40, bottom: 80, left: 60 };
   private chartWidth = 0;
   private chartHeight = 0;
   private barWidth = 0;
 
-  // Estado del ejercicio
-  isCompleted = false;
-  showFeedback = false;
-  feedbackMessage = '';
-  isCorrect = false;
+  // Estado del drag en celdas
+  isDragging = false;
+  dragCellIndex = -1;
+  private dragStartY = 0;
+  private dragCurrentValue = 0;
   
-  // Filtro de adultos (para ejercicios avanzados)
-  showAdultsOnly = false;
-  originalValues: number[] = [];
+  // Estado del drag en barras del canvas
+  isDraggingBar = false;
+  dragBarIndex = -1;
+  private barDragStartY = 0;
+  private barDragCurrentValue = 0;
+
+  // Configuración de tamaños
+  private readonly ADULT_SIZE = 52;
+  private readonly CHILD_SIZE = 28;
+  private readonly MIN_DISTANCE = 60;
+  private readonly MAX_ATTEMPTS = 3;
+
+  // Touch handling
+  private startY: number | null = null;
 
   constructor(
     private route: ActivatedRoute,
@@ -77,12 +106,12 @@ export class InteractiveChartExerciseComponent implements OnInit, AfterViewInit,
 
   ngOnInit(): void {
     this.loadExerciseConfig();
-    this.originalValues = [...this.config.chartData.values];
+    this.initializeTableValues();
+    this.generateEmojiPositions();
   }
 
   private loadExerciseConfig(): void {
-    // Intentar cargar configuración desde sessionStorage
-    const savedConfig = sessionStorage.getItem('currentExerciseConfig');
+    const savedConfig = sessionStorage.getItem('currentEmojiExerciseConfig');
     if (savedConfig) {
       try {
         this.config = JSON.parse(savedConfig);
@@ -92,27 +121,265 @@ export class InteractiveChartExerciseComponent implements OnInit, AfterViewInit,
     }
   }
 
+  // Ejemplos de configuraciones para demostrar modularidad
+  loadAnimalsExercise(): void {
+    this.config = {
+      id: 'animals-counting',
+      title: 'Cuenta los Animales',
+      question: '¿Cuántos animales hay de cada tipo?',
+      instructions: 'Observa los animales y ajusta los valores arrastrando las celdas.',
+      allowEdit: true,
+      maxTotal: 25,
+      items: [
+        { emoji: '🐶', name: 'Perros', adults: 4, children: 2, color: '#FFB366' },
+        { emoji: '😺', name: 'Gatos', adults: 3, children: 3, color: '#66B3FF' },
+        { emoji: '🐰', name: 'Conejos', adults: 2, children: 3, color: '#66FF66' }
+      ]
+    };
+    this.resetExercise();
+  }
+
+  loadFruitsExercise(): void {
+    this.config = {
+      id: 'fruits-counting',
+      title: 'Cuenta las Frutas',
+      question: '¿Cuántas frutas hay de cada tipo?',
+      instructions: 'Observa las frutas y ajusta los valores usando los controles.',
+      allowEdit: true,
+      maxTotal: 25,
+      items: [
+        { emoji: '🍎', name: 'Manzanas', adults: 5, children: 2, color: '#FF6B6B' },
+        { emoji: '🍌', name: 'Bananas', adults: 3, children: 4, color: '#FFE66D' },
+        { emoji: '🍇', name: 'Uvas', adults: 2, children: 3, color: '#9B59B6' }
+      ]
+    };
+    this.resetExercise();
+  }
+
+  loadVehiclesExercise(): void {
+    this.config = {
+      id: 'vehicles-counting',
+      title: 'Cuenta los Vehículos',
+      question: '¿Cuántos vehículos hay de cada tipo?',
+      instructions: 'Observa los vehículos y arrastra las celdas para ajustar los valores.',
+      allowEdit: true,
+      maxTotal: 25,
+      items: [
+        { emoji: '🚗', name: 'Autos', adults: 4, children: 1, color: '#4ECDC4' },
+        { emoji: '🚲', name: 'Bicicletas', adults: 3, children: 3, color: '#45B7D1' },
+        { emoji: '🛵', name: 'Motos', adults: 2, children: 2, color: '#96CEB4' }
+      ]
+    };
+    this.resetExercise();
+  }
+
+  loadSportsExercise(): void {
+    this.config = {
+      id: 'sports-counting',
+      title: 'Cuenta los Deportes',
+      question: '¿Cuántos elementos deportivos hay?',
+      instructions: 'Cuenta los elementos deportivos y ajusta los valores correctamente.',
+      allowEdit: true,
+      maxTotal: 25,
+      items: [
+        { emoji: '⚽', name: 'Pelotas', adults: 6, children: 0, color: '#E17055' },
+        { emoji: '🏀', name: 'Basketballs', adults: 3, children: 2, color: '#FDCB6E' },
+        { emoji: '🎾', name: 'Tenis', adults: 2, children: 4, color: '#A29BFE' }
+      ]
+    };
+    this.resetExercise();
+  }
+
   ngAfterViewInit(): void {
-    this.initializeCanvas();
-    this.drawChart();
-    this.setupEventListeners();
+    if (this.currentView === 'exercise') {
+      this.initializeCanvas();
+    }
   }
 
   ngOnDestroy(): void {
     this.removeEventListeners();
   }
 
+  private initializeTableValues(): void {
+    this.tableValues = this.config.items.map(() => 0);
+  }
+
+  private generateEmojiPositions(): void {
+    this.emojiPositions = [];
+    let idCounter = 0;
+    
+    this.config.items.forEach((item, itemIndex) => {
+      // Generar posiciones para adultos
+      for (let i = 0; i < item.adults; i++) {
+        const position = this.generateValidPosition(true);
+        if (position) {
+          this.emojiPositions.push({
+            ...position,
+            id: `${item.emoji}-adult-${idCounter++}`,
+            isClicked: false
+          });
+        }
+      }
+      
+      // Generar posiciones para crías
+      for (let i = 0; i < item.children; i++) {
+        const position = this.generateValidPosition(false);
+        if (position) {
+          this.emojiPositions.push({
+            ...position,
+            id: `${item.emoji}-child-${idCounter++}`,
+            isClicked: false
+          });
+        }
+      }
+    });
+  }
+
+  private generateValidPosition(isAdult: boolean): EmojiPosition | null {
+    const size = isAdult ? this.ADULT_SIZE : this.CHILD_SIZE;
+    
+    for (let attempt = 0; attempt < this.MAX_ATTEMPTS; attempt++) {
+      const x = Math.random() * (100 - (size / 8));
+      const y = Math.random() * (100 - (size / 8));
+      
+      const newPosition: EmojiPosition = {
+        x, y, size, isAdult,
+        isClicked: false,
+        id: ''
+      };
+      
+      if (this.isValidPosition(newPosition)) {
+        return newPosition;
+      }
+    }
+    
+    // Fallback: grid positioning
+    return this.getFallbackGridPosition(isAdult);
+  }
+
+  private isValidPosition(newPosition: EmojiPosition): boolean {
+    return this.emojiPositions.every(existing => {
+      const distance = Math.sqrt(
+        Math.pow(newPosition.x - existing.x, 2) + 
+        Math.pow(newPosition.y - existing.y, 2)
+      );
+      return distance >= (this.MIN_DISTANCE / 10); // Convert to percentage
+    });
+  }
+
+  private getFallbackGridPosition(isAdult: boolean): EmojiPosition {
+    const gridSize = 20;
+    const size = isAdult ? this.ADULT_SIZE : this.CHILD_SIZE;
+    const positions = this.emojiPositions.length;
+    
+    return {
+      x: (positions % 5) * gridSize,
+      y: Math.floor(positions / 5) * gridSize,
+      size,
+      isAdult,
+      isClicked: false,
+      id: ''
+    };
+  }
+
+  // Métodos de navegación
+  startExercise(): void {
+    this.isTransitioning = true;
+    
+    setTimeout(() => {
+      this.currentView = 'exercise';
+      this.isTransitioning = false;
+      
+      // Inicializar canvas después de la transición
+      setTimeout(() => {
+        this.initializeCanvas();
+      }, 100);
+    }, 300);
+  }
+
+  goBackToQuestion(): void {
+    this.isTransitioning = true;
+    
+    setTimeout(() => {
+      this.currentView = 'question';
+      this.isTransitioning = false;
+    }, 300);
+  }
+
+  // Métodos de interacción con emojis
+  onEmojiClick(emojiId: string): void {
+    const emoji = this.emojiPositions.find(e => e.id === emojiId);
+    if (emoji) {
+      emoji.isClicked = !emoji.isClicked;
+    }
+  }
+
+  getEmojiStyle(emoji: EmojiPosition): any {
+    const baseStyle = {
+      position: 'absolute',
+      left: emoji.x + '%',
+      top: emoji.y + '%',
+      fontSize: emoji.size + 'px',
+      cursor: 'pointer',
+      userSelect: 'none',
+      transition: 'all 0.2s ease',
+      zIndex: emoji.isClicked ? 10 : 1
+    };
+
+    if (emoji.isClicked) {
+      return {
+        ...baseStyle,
+        transform: 'scale(1.1)',
+        filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))'
+      };
+    }
+
+    if (!emoji.isAdult) {
+      return {
+        ...baseStyle,
+        opacity: 0.9
+      };
+    }
+
+    return baseStyle;
+  }
+
+  getEmojiOutlineStyle(emoji: EmojiPosition, itemColor: string): any {
+    if (!emoji.isClicked) return {};
+    
+    return {
+      position: 'absolute',
+      left: emoji.x + '%',
+      top: emoji.y + '%',
+      width: emoji.size + 'px',
+      height: emoji.size + 'px',
+      border: `2px solid ${itemColor}`,
+      borderRadius: '50%',
+      pointerEvents: 'none',
+      zIndex: 9
+    };
+  }
+
+  // Métodos de canvas y gráfico
   private initializeCanvas(): void {
+    if (!this.canvasRef) return;
+    
     this.canvas = this.canvasRef.nativeElement;
     this.ctx = this.canvas.getContext('2d')!;
     
-    // Configurar el tamaño del canvas
     const container = this.canvas.parentElement!;
     this.canvas.width = container.clientWidth;
-    this.canvas.height = 400;
+    this.canvas.height = 500;
     
     this.updateCanvasRect();
     this.calculateDimensions();
+    this.drawChart();
+    
+    // Agregar listeners para el arrastre en las barras
+    this.canvas.addEventListener('mousedown', this.onCanvasMouseDown.bind(this));
+    this.canvas.addEventListener('mousemove', this.onCanvasMouseMove.bind(this));
+    this.canvas.addEventListener('mouseup', this.onCanvasMouseUp.bind(this));
+    this.canvas.addEventListener('mouseleave', this.onCanvasMouseUp.bind(this));
   }
 
   private updateCanvasRect(): void {
@@ -122,40 +389,43 @@ export class InteractiveChartExerciseComponent implements OnInit, AfterViewInit,
   private calculateDimensions(): void {
     this.chartWidth = this.canvas.width - this.MARGIN.left - this.MARGIN.right;
     this.chartHeight = this.canvas.height - this.MARGIN.top - this.MARGIN.bottom;
-    this.barWidth = this.chartWidth / this.config.chartData.categories.length * 0.6;
+    this.barWidth = this.chartWidth / this.config.items.length * 0.6;
   }
 
   private drawChart(): void {
+    if (!this.ctx) return;
+    
     // Limpiar canvas
     this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
     
-    // Configurar estilos
+    // Configurar estilos base
     this.ctx.fillStyle = '#333';
     this.ctx.strokeStyle = '#ddd';
     this.ctx.lineWidth = 1;
-    this.ctx.font = '12px Arial';
+    this.ctx.font = '14px "DM Sans", sans-serif';
 
+    // Calcular escala automática
+    const maxValue = Math.max(...this.tableValues, 1) + 2;
+    
     // Dibujar grid
-    this.drawGrid();
+    this.drawGrid(maxValue);
     
     // Dibujar ejes
     this.drawAxes();
     
     // Dibujar barras
-    this.drawBars();
+    this.drawBars(maxValue);
     
     // Dibujar etiquetas
-    this.drawLabels();
+    this.drawLabels(maxValue);
   }
 
-  private drawGrid(): void {
-    const { maxValue, gridSize } = this.config.chartData;
+  private drawGrid(maxValue: number): void {
+    this.ctx.strokeStyle = '#e5e7eb';
+    this.ctx.lineWidth = 0.5;
     
-    this.ctx.strokeStyle = '#f0f0f0';
-    this.ctx.lineWidth = 1;
-    
-    // Líneas horizontales
-    for (let i = 0; i <= maxValue; i += 2) {
+    // Líneas horizontales cada 1 unidad (exactas para cada valor)
+    for (let i = 0; i <= maxValue; i++) {
       const y = this.MARGIN.top + this.chartHeight - (i / maxValue) * this.chartHeight;
       this.ctx.beginPath();
       this.ctx.moveTo(this.MARGIN.left, y);
@@ -163,13 +433,35 @@ export class InteractiveChartExerciseComponent implements OnInit, AfterViewInit,
       this.ctx.stroke();
     }
     
-    // Líneas verticales
-    const barSpacing = this.chartWidth / this.config.chartData.categories.length;
-    for (let i = 0; i <= this.config.chartData.categories.length; i++) {
-      const x = this.MARGIN.left + i * barSpacing;
+    // Líneas verticales exactas basadas en las barras
+    const barSpacing = this.chartWidth / this.config.items.length;
+    
+    // Líneas en los bordes izquierdo y derecho del área del gráfico
+    this.ctx.beginPath();
+    this.ctx.moveTo(this.MARGIN.left, this.MARGIN.top);
+    this.ctx.lineTo(this.MARGIN.left, this.MARGIN.top + this.chartHeight);
+    this.ctx.stroke();
+    
+    this.ctx.beginPath();
+    this.ctx.moveTo(this.MARGIN.left + this.chartWidth, this.MARGIN.top);
+    this.ctx.lineTo(this.MARGIN.left + this.chartWidth, this.MARGIN.top + this.chartHeight);
+    this.ctx.stroke();
+    
+    // Líneas en los bordes de cada barra
+    for (let i = 0; i < this.config.items.length; i++) {
+      const x = this.MARGIN.left + i * barSpacing + (barSpacing - this.barWidth) / 2;
+      const xEnd = x + this.barWidth;
+      
+      // Línea izquierda de la barra
       this.ctx.beginPath();
       this.ctx.moveTo(x, this.MARGIN.top);
       this.ctx.lineTo(x, this.MARGIN.top + this.chartHeight);
+      this.ctx.stroke();
+      
+      // Línea derecha de la barra
+      this.ctx.beginPath();
+      this.ctx.moveTo(xEnd, this.MARGIN.top);
+      this.ctx.lineTo(xEnd, this.MARGIN.top + this.chartHeight);
       this.ctx.stroke();
     }
   }
@@ -191,17 +483,23 @@ export class InteractiveChartExerciseComponent implements OnInit, AfterViewInit,
     this.ctx.stroke();
   }
 
-  private drawBars(): void {
-    const { categories, values, colors, maxValue } = this.config.chartData;
-    const barSpacing = this.chartWidth / categories.length;
+  private drawBars(maxValue: number): void {
+    const barSpacing = this.chartWidth / this.config.items.length;
+    const minBarHeight = 20; // Altura mínima para barras con valor 0
     
-    values.forEach((value, index) => {
-      const barHeight = (value / maxValue) * this.chartHeight;
+    this.tableValues.forEach((value, index) => {
+      let barHeight = (value / maxValue) * this.chartHeight;
       const x = this.MARGIN.left + index * barSpacing + (barSpacing - this.barWidth) / 2;
-      const y = this.MARGIN.top + this.chartHeight - barHeight;
+      let y = this.MARGIN.top + this.chartHeight - barHeight;
       
-      // Dibujar barra
-      this.ctx.fillStyle = colors[index];
+      // Para valores 0, mostrar una barra mínima del color correspondiente
+      if (value === 0) {
+        barHeight = minBarHeight;
+        y = this.MARGIN.top + this.chartHeight - barHeight;
+      }
+      
+      // Dibujar barra principal
+      this.ctx.fillStyle = this.config.items[index].color;
       this.ctx.fillRect(x, y, this.barWidth, barHeight);
       
       // Borde de la barra
@@ -209,214 +507,278 @@ export class InteractiveChartExerciseComponent implements OnInit, AfterViewInit,
       this.ctx.lineWidth = 1;
       this.ctx.strokeRect(x, y, this.barWidth, barHeight);
       
-      // Valor encima de la barra
+      // Agregar handle de arrastre en la parte superior de la barra
+      const handleHeight = 8;
+      const handleY = y - handleHeight;
+      
+      // Fondo del handle
+      this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+      this.ctx.fillRect(x, handleY, this.barWidth, handleHeight);
+      
+      // Líneas del handle para indicar que es draggable
+      this.ctx.strokeStyle = '#fff';
+      this.ctx.lineWidth = 1;
+      for (let i = 0; i < 3; i++) {
+        const lineY = handleY + 2 + i * 2;
+        this.ctx.beginPath();
+        this.ctx.moveTo(x + 5, lineY);
+        this.ctx.lineTo(x + this.barWidth - 5, lineY);
+        this.ctx.stroke();
+      }
+      
+      // Valor encima del handle
       this.ctx.fillStyle = '#333';
       this.ctx.textAlign = 'center';
-      this.ctx.fillText(value.toString(), x + this.barWidth / 2, y - 5);
+      this.ctx.font = 'bold 16px "DM Sans", sans-serif';
+      this.ctx.fillText(value.toString(), x + this.barWidth / 2, handleY - 5);
     });
   }
 
-  private drawLabels(): void {
-    const { categories, maxValue } = this.config.chartData;
-    
+  private drawLabels(maxValue: number): void {
     this.ctx.fillStyle = '#333';
     this.ctx.textAlign = 'center';
+    this.ctx.font = '14px "DM Sans", sans-serif';
     
-    // Etiquetas del eje X (categorías)
-    const barSpacing = this.chartWidth / categories.length;
-    categories.forEach((category, index) => {
+    // Etiquetas del eje X (emojis)
+    const barSpacing = this.chartWidth / this.config.items.length;
+    this.config.items.forEach((item, index) => {
       const x = this.MARGIN.left + index * barSpacing + barSpacing / 2;
-      const y = this.MARGIN.top + this.chartHeight + 20;
-      this.ctx.fillText(category, x, y);
+      const y = this.MARGIN.top + this.chartHeight + 30;
+      this.ctx.font = '24px Arial';
+      this.ctx.fillText(item.emoji, x, y);
     });
     
-    // Etiquetas del eje Y (valores)
+    // Etiquetas del eje Y (valores) - tick marks cada 2 unidades
     this.ctx.textAlign = 'right';
+    this.ctx.font = '12px "DM Sans", sans-serif';
     for (let i = 0; i <= maxValue; i += 2) {
       const y = this.MARGIN.top + this.chartHeight - (i / maxValue) * this.chartHeight + 4;
       this.ctx.fillText(i.toString(), this.MARGIN.left - 10, y);
     }
   }
 
-  private setupEventListeners(): void {
-    this.canvas.addEventListener('mousedown', this.onMouseDown.bind(this));
-    this.canvas.addEventListener('mousemove', this.onMouseMove.bind(this));
-    this.canvas.addEventListener('mouseup', this.onMouseUp.bind(this));
-    this.canvas.addEventListener('mouseleave', this.onMouseUp.bind(this));
-    
-    // Touch events para dispositivos móviles
-    this.canvas.addEventListener('touchstart', this.onTouchStart.bind(this));
-    this.canvas.addEventListener('touchmove', this.onTouchMove.bind(this));
-    this.canvas.addEventListener('touchend', this.onTouchEnd.bind(this));
-    
-    window.addEventListener('resize', this.onResize.bind(this));
-  }
-
-  private removeEventListeners(): void {
-    this.canvas.removeEventListener('mousedown', this.onMouseDown.bind(this));
-    this.canvas.removeEventListener('mousemove', this.onMouseMove.bind(this));
-    this.canvas.removeEventListener('mouseup', this.onMouseUp.bind(this));
-    this.canvas.removeEventListener('mouseleave', this.onMouseUp.bind(this));
-    this.canvas.removeEventListener('touchstart', this.onTouchStart.bind(this));
-    this.canvas.removeEventListener('touchmove', this.onTouchMove.bind(this));
-    this.canvas.removeEventListener('touchend', this.onTouchEnd.bind(this));
-    window.removeEventListener('resize', this.onResize.bind(this));
-  }
-
-  private onMouseDown(event: MouseEvent): void {
-    const rect = this.canvas.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-    
-    const barIndex = this.getBarIndexAtPosition(x, y);
-    if (barIndex !== -1) {
-      this.isDragging = true;
-      this.dragBarIndex = barIndex;
-      this.canvas.style.cursor = 'grabbing';
-    }
-  }
-
-  private onMouseMove(event: MouseEvent): void {
-    const rect = this.canvas.getBoundingClientRect();
-    const x = event.clientX - rect.left;
-    const y = event.clientY - rect.top;
-    
-    if (this.isDragging && this.dragBarIndex !== -1) {
-      this.updateBarValue(y);
-    } else {
-      // Cambiar cursor si está sobre una barra
-      const barIndex = this.getBarIndexAtPosition(x, y);
-      this.canvas.style.cursor = barIndex !== -1 ? 'grab' : 'default';
-    }
-  }
-
-  private onMouseUp(): void {
-    this.isDragging = false;
-    this.dragBarIndex = -1;
-    this.canvas.style.cursor = 'default';
-  }
-
-  private onTouchStart(event: TouchEvent): void {
+  // Métodos de drag en celdas
+  onCellMouseDown(event: MouseEvent, index: number): void {
     event.preventDefault();
-    const touch = event.touches[0];
-    const rect = this.canvas.getBoundingClientRect();
-    const x = touch.clientX - rect.left;
-    const y = touch.clientY - rect.top;
+    this.isDragging = true;
+    this.dragCellIndex = index;
+    this.dragStartY = event.clientY;
+    this.dragCurrentValue = this.tableValues[index];
     
-    const barIndex = this.getBarIndexAtPosition(x, y);
-    if (barIndex !== -1) {
-      this.isDragging = true;
-      this.dragBarIndex = barIndex;
-    }
+    document.addEventListener('mousemove', this.onDocumentMouseMove.bind(this));
+    document.addEventListener('mouseup', this.onDocumentMouseUp.bind(this));
   }
 
-  private onTouchMove(event: TouchEvent): void {
-    event.preventDefault();
-    if (this.isDragging && this.dragBarIndex !== -1) {
-      const touch = event.touches[0];
-      const rect = this.canvas.getBoundingClientRect();
-      const y = touch.clientY - rect.top;
-      this.updateBarValue(y);
-    }
-  }
-
-  private onTouchEnd(event: TouchEvent): void {
-    event.preventDefault();
-    this.isDragging = false;
-    this.dragBarIndex = -1;
-  }
-
-  private onResize(): void {
-    this.updateCanvasRect();
-    this.calculateDimensions();
+  private onDocumentMouseMove(event: MouseEvent): void {
+    if (!this.isDragging || this.dragCellIndex === -1) return;
+    
+    const deltaY = this.dragStartY - event.clientY; // Invertir para drag up = increase
+    const valueChange = Math.floor(deltaY / 5); // 5px = 1 unidad
+    const newValue = Math.max(0, Math.min(25, this.dragCurrentValue + valueChange));
+    
+    this.tableValues[this.dragCellIndex] = newValue;
     this.drawChart();
   }
 
-  private getBarIndexAtPosition(x: number, y: number): number {
-    const { values, maxValue } = this.config.chartData;
-    const barSpacing = this.chartWidth / values.length;
+  private onDocumentMouseUp(): void {
+    this.isDragging = false;
+    this.dragCellIndex = -1;
     
-    for (let i = 0; i < values.length; i++) {
-      const barX = this.MARGIN.left + i * barSpacing + (barSpacing - this.barWidth) / 2;
-      const barHeight = (values[i] / maxValue) * this.chartHeight;
-      const barY = this.MARGIN.top + this.chartHeight - barHeight;
-      
-      if (x >= barX && x <= barX + this.barWidth && y >= barY && y <= barY + barHeight) {
-        return i;
-      }
-    }
-    return -1;
+    document.removeEventListener('mousemove', this.onDocumentMouseMove.bind(this));
+    document.removeEventListener('mouseup', this.onDocumentMouseUp.bind(this));
   }
 
-  private updateBarValue(mouseY: number): void {
-    const { maxValue } = this.config.chartData;
-    const relativeY = mouseY - this.MARGIN.top;
-    const value = Math.max(0, Math.min(maxValue, maxValue - (relativeY / this.chartHeight) * maxValue));
-    const snappedValue = Math.round(value);
-    
-    this.config.chartData.values[this.dragBarIndex] = snappedValue;
-    this.drawChart();
-  }
-
-  onInputChange(event: Event, index: number): void {
+  // Métodos de input numérico
+  onNumberInputChange(event: Event, index: number): void {
     const target = event.target as HTMLInputElement;
-    const newValue = Number(target.value);
-    this.onTableValueChange(index, newValue);
+    const newValue = Math.max(0, Math.min(25, Number(target.value)));
+    this.tableValues[index] = newValue;
+    this.drawChart();
   }
 
-  onTableValueChange(index: number, newValue: number): void {
-    if (newValue >= 0 && newValue <= this.config.chartData.maxValue) {
-      this.config.chartData.values[index] = newValue;
+  incrementValue(index: number): void {
+    if (this.tableValues[index] < 25) {
+      this.tableValues[index]++;
       this.drawChart();
     }
   }
 
-  onAdultsFilterChange(): void {
-    if (this.showAdultsOnly) {
-      // Aplicar filtro de adultos (ejemplo: reducir valores a la mitad)
-      this.config.chartData.values = this.originalValues.map(val => Math.floor(val * 0.6));
-    } else {
-      // Restaurar valores originales
-      this.config.chartData.values = [...this.originalValues];
+  decrementValue(index: number): void {
+    if (this.tableValues[index] > 0) {
+      this.tableValues[index]--;
+      this.drawChart();
     }
-    this.drawChart();
   }
 
+  // Métodos de cálculo
+  getTotalCorrect(itemIndex: number): number {
+    const item = this.config.items[itemIndex];
+    return item.adults + item.children;
+  }
+
+  getAllCorrectTotals(): number[] {
+    return this.config.items.map(item => item.adults + item.children);
+  }
+
+  // Métodos de validación
   checkAnswer(): void {
-    if (this.config.correctAnswers) {
-      const isCorrect = this.config.chartData.values.every((val, index) => 
-        val === this.config.correctAnswers![index]
-      );
-      
-      this.isCorrect = isCorrect;
-      this.feedbackMessage = isCorrect 
-        ? '¡Excelente! Has construido el gráfico correctamente.' 
-        : 'Revisa los valores. Algunos no coinciden con los datos esperados.';
-    } else {
-      this.isCorrect = true;
-      this.feedbackMessage = '¡Buen trabajo! Has completado el gráfico.';
-    }
+    const correctAnswers = this.getAllCorrectTotals();
+    const isCorrect = this.tableValues.every((value, index) => value === correctAnswers[index]);
+    
+    this.isCorrect = isCorrect;
+    this.feedbackMessage = isCorrect 
+      ? '¡Excelente! Has contado correctamente todos los emojis.' 
+      : 'Revisa tu conteo. Algunos valores no son correctos.';
     
     this.showFeedback = true;
-    this.isCompleted = this.isCorrect;
+    this.isCompleted = isCorrect;
   }
 
   resetExercise(): void {
-    this.config.chartData.values = [...this.originalValues];
+    this.initializeTableValues();
     this.showFeedback = false;
     this.isCompleted = false;
-    this.showAdultsOnly = false;
+    this.currentView = 'question';
+    this.generateEmojiPositions();
     this.drawChart();
   }
 
   continueToNext(): void {
-    // Lógica para continuar al siguiente ejercicio
     console.log('Continuar al siguiente ejercicio');
-    // Por ahora, volver al demo
     this.router.navigate(['/exercise-demo']);
   }
 
   goBack(): void {
     this.router.navigate(['/exercise-demo']);
   }
+
+  private removeEventListeners(): void {
+    document.removeEventListener('mousemove', this.onDocumentMouseMove.bind(this));
+    document.removeEventListener('mouseup', this.onDocumentMouseUp.bind(this));
+    
+    // Remover listeners del canvas
+    if (this.canvas) {
+      this.canvas.removeEventListener('mousedown', this.onCanvasMouseDown.bind(this));
+      this.canvas.removeEventListener('mousemove', this.onCanvasMouseMove.bind(this));
+      this.canvas.removeEventListener('mouseup', this.onCanvasMouseUp.bind(this));
+      this.canvas.removeEventListener('mouseleave', this.onCanvasMouseUp.bind(this));
+    }
+  }
+
+  // Métodos para arrastre en las barras del canvas
+  private onCanvasMouseDown(event: MouseEvent): void {
+    if (!this.canvas) return;
+    
+    const rect = this.canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    
+    // Detectar si el clic está en una barra
+    const barIndex = this.getBarIndexAtPosition(x, y);
+    if (barIndex !== -1) {
+      this.isDraggingBar = true;
+      this.dragBarIndex = barIndex;
+      this.barDragStartY = y;
+      this.barDragCurrentValue = this.tableValues[barIndex];
+      this.canvas.style.cursor = 'ns-resize';
+    }
+  }
+
+  private onCanvasMouseMove(event: MouseEvent): void {
+    if (!this.canvas) return;
+    
+    const rect = this.canvas.getBoundingClientRect();
+    const x = event.clientX - rect.left;
+    const y = event.clientY - rect.top;
+    
+    if (this.isDraggingBar && this.dragBarIndex !== -1) {
+      // Calcular nuevo valor basado en el movimiento
+      const deltaY = this.barDragStartY - y; // Invertir para que arriba sea positivo
+      const maxValue = Math.max(...this.tableValues, 1) + 2;
+      const valueChange = Math.round(deltaY / (this.chartHeight / maxValue));
+      const newValue = Math.max(0, Math.min(25, this.barDragCurrentValue + valueChange));
+      
+      this.tableValues[this.dragBarIndex] = newValue;
+      this.drawChart();
+    } else {
+      // Cambiar cursor si está sobre una barra
+      const barIndex = this.getBarIndexAtPosition(x, y);
+      this.canvas.style.cursor = barIndex !== -1 ? 'ns-resize' : 'default';
+    }
+  }
+
+  private onCanvasMouseUp(): void {
+    if (this.isDraggingBar) {
+      this.isDraggingBar = false;
+      this.dragBarIndex = -1;
+      if (this.canvas) {
+        this.canvas.style.cursor = 'default';
+      }
+    }
+  }
+
+  private getBarIndexAtPosition(x: number, y: number): number {
+    const barSpacing = this.chartWidth / this.config.items.length;
+    const maxValue = Math.max(...this.tableValues, 1) + 2;
+    const minBarHeight = 20;
+    
+    for (let i = 0; i < this.config.items.length; i++) {
+      const value = this.tableValues[i];
+      let barHeight = (value / maxValue) * this.chartHeight;
+      const barX = this.MARGIN.left + i * barSpacing + (barSpacing - this.barWidth) / 2;
+      let barY = this.MARGIN.top + this.chartHeight - barHeight;
+      
+      // Ajustar para barras con valor 0
+      if (value === 0) {
+        barHeight = minBarHeight;
+        barY = this.MARGIN.top + this.chartHeight - barHeight;
+      }
+      
+      // Incluir el handle de arrastre
+      const handleHeight = 8;
+      const handleY = barY - handleHeight;
+      
+      // Verificar si el clic está en la barra o el handle
+      if (x >= barX && x <= barX + this.barWidth && 
+          y >= handleY && y <= this.MARGIN.top + this.chartHeight) {
+        return i;
+      }
+    }
+    
+    return -1;
+  }
+
+  // Listeners para scroll/touch navigation - TEMPORALMENTE DESACTIVADOS
+  // @HostListener('wheel', ['$event'])
+  // onWheel(event: WheelEvent): void {
+  //   if (this.currentView === 'exercise' && event.deltaY < 0) {
+  //     event.preventDefault();
+  //     this.goBackToQuestion();
+  //   }
+  // }
+
+  // @HostListener('touchstart', ['$event'])
+  // onTouchStart(event: TouchEvent): void {
+  //   if (this.currentView === 'exercise') {
+  //     this.startY = event.touches[0].clientY;
+  //   }
+  // }
+
+  // @HostListener('touchmove', ['$event'])
+  // onTouchMove(event: TouchEvent): void {
+  //   if (this.currentView === 'exercise' && this.startY !== null) {
+  //     const currentY = event.touches[0].clientY;
+  //     const deltaY = currentY - this.startY;
+  //     
+  //     if (deltaY > 50) {
+  //       this.goBackToQuestion();
+  //       this.startY = null;
+  //     }
+  //   }
+  // }
+
+  // @HostListener('touchend', ['$event'])
+  // onTouchEnd(event: TouchEvent): void {
+  //   this.startY = null;
+  // }
 } 

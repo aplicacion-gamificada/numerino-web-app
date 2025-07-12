@@ -151,6 +151,11 @@ $shadow-color: rgba(0, 0, 0, 0.1);
           background: $success-color;
           color: white;
         }
+        
+        &.badge-info {
+          background: #17a2b8;
+          color: white;
+        }
       }
     }
   }
@@ -162,7 +167,15 @@ $shadow-color: rgba(0, 0, 0, 0.1);
       color: #6c757d;
       font-size: 0.9rem;
       line-height: 1.5;
+      margin-bottom: 1rem;
+    }
+    
+    .card-question {
+      color: $text-color;
+      font-size: 1rem;
+      font-weight: 500;
       margin-bottom: 1.5rem;
+      font-style: italic;
     }
     
     .chart-preview {
@@ -287,6 +300,66 @@ $shadow-color: rgba(0, 0, 0, 0.1);
         .predictions-count {
           font-size: 0.8rem;
           color: #6c757d;
+        }
+      }
+    }
+  }
+
+  // Estilos específicos para tarjetas de emojis
+  &.emoji-card {
+    border-left: 4px solid #66B3FF;
+    
+    .card-content {
+      .emoji-preview {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        
+        .preview-emojis {
+          display: flex;
+          gap: 0.75rem;
+          justify-content: space-around;
+          flex-wrap: wrap;
+          
+          .emoji-preview-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.75rem;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 0, 0, 0.1);
+            min-width: 80px;
+            transition: all 0.3s ease;
+            
+            &:hover {
+              transform: translateY(-2px);
+              box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            }
+            
+            .emoji-display {
+              font-size: 2rem;
+              line-height: 1;
+            }
+            
+            .emoji-name {
+              font-size: 0.7rem;
+              color: #6c757d;
+              text-align: center;
+              font-weight: 500;
+            }
+            
+            .emoji-total {
+              font-size: 0.8rem;
+              font-weight: 600;
+              color: $text-color;
+              background: rgba(255, 255, 255, 0.8);
+              padding: 0.2rem 0.5rem;
+              border-radius: 12px;
+              min-width: 20px;
+              text-align: center;
+            }
+          }
         }
       }
     }
