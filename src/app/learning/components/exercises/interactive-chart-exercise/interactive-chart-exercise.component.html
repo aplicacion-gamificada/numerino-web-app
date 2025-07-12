@@ -59,7 +59,7 @@
   <div class="exercise-view" 
        #exerciseContainer
        *ngIf="currentView === 'exercise'"
-       [class.fade-in]="isTransitioning">
+       [class.fade-in]="!isTransitioning">
     
     <!-- Header compacto -->
     <div class="exercise-header">

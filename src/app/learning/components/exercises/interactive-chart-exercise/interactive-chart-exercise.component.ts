@@ -89,6 +89,17 @@ export class InteractiveChartExerciseComponent implements OnInit, AfterViewInit,
   dragBarIndex = -1;
   private barDragStartY = 0;
   private barDragCurrentValue = 0;
+  private hoveredBarIndex = -1;
+  
+  // Para animaciones suaves
+  private animationFrameId: number | null = null;
+  private targetValues: number[] = [];
+  private currentValues: number[] = [];
+  private readonly LERP_FACTOR = 0.3;
+  private readonly DEAD_ZONE = 8; // Aumentado para mayor precisión inicial
+  private readonly UPDATE_THROTTLE = 32; // Reducido a 30fps para más control
+  private readonly SENSITIVITY_FACTOR = 0.4; // Factor de sensibilidad reducido
+  private lastUpdateTime = 0;
 
   // Configuración de tamaños
   private readonly ADULT_SIZE = 52;
@@ -198,10 +209,18 @@ export class InteractiveChartExerciseComponent implements OnInit, AfterViewInit,
 
   ngOnDestroy(): void {
     this.removeEventListeners();
+    
+    // Limpiar animaciones pendientes
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
+    }
   }
 
   private initializeTableValues(): void {
     this.tableValues = this.config.items.map(() => 0);
+    this.targetValues = [...this.tableValues];
+    this.currentValues = [...this.tableValues];
   }
 
   private generateEmojiPositions(): void {
@@ -288,13 +307,17 @@ export class InteractiveChartExerciseComponent implements OnInit, AfterViewInit,
     
     setTimeout(() => {
       this.currentView = 'exercise';
-      this.isTransitioning = false;
       
-      // Inicializar canvas después de la transición
+      // Permitir que Angular procese el cambio de vista
       setTimeout(() => {
-        this.initializeCanvas();
-      }, 100);
-    }, 300);
+        this.isTransitioning = false;
+        
+        // Inicializar canvas después de que termine la transición
+        setTimeout(() => {
+          this.initializeCanvas();
+        }, 500);
+      }, 50);
+    }, 100);
   }
 
   goBackToQuestion(): void {
@@ -487,7 +510,7 @@ export class InteractiveChartExerciseComponent implements OnInit, AfterViewInit,
     const barSpacing = this.chartWidth / this.config.items.length;
     const minBarHeight = 20; // Altura mínima para barras con valor 0
     
-    this.tableValues.forEach((value, index) => {
+    this.currentValues.forEach((value, index) => {
       let barHeight = (value / maxValue) * this.chartHeight;
       const x = this.MARGIN.left + index * barSpacing + (barSpacing - this.barWidth) / 2;
       let y = this.MARGIN.top + this.chartHeight - barHeight;
@@ -498,39 +521,94 @@ export class InteractiveChartExerciseComponent implements OnInit, AfterViewInit,
         y = this.MARGIN.top + this.chartHeight - barHeight;
       }
       
+      // Efectos visuales mejorados
+      const isHovered = this.hoveredBarIndex === index;
+      const isDragging = this.isDraggingBar && this.dragBarIndex === index;
+      
+      // Aplicar efectos hover y drag
+      if (isHovered || isDragging) {
+        // Glow effect
+        this.ctx.shadowColor = this.config.items[index].color;
+        this.ctx.shadowBlur = isHovered ? 8 : 15;
+        this.ctx.shadowOffsetX = 0;
+        this.ctx.shadowOffsetY = 0;
+      }
+      
       // Dibujar barra principal
       this.ctx.fillStyle = this.config.items[index].color;
+      if (isDragging) {
+        this.ctx.globalAlpha = 0.9;
+      }
       this.ctx.fillRect(x, y, this.barWidth, barHeight);
       
-      // Borde de la barra
-      this.ctx.strokeStyle = '#333';
-      this.ctx.lineWidth = 1;
+      // Resetear sombra y opacidad
+      this.ctx.shadowBlur = 0;
+      this.ctx.globalAlpha = 1;
+      
+      // Borde de la barra mejorado
+      this.ctx.strokeStyle = isDragging ? '#000' : '#333';
+      this.ctx.lineWidth = isDragging ? 2 : 1;
       this.ctx.strokeRect(x, y, this.barWidth, barHeight);
       
-      // Agregar handle de arrastre en la parte superior de la barra
-      const handleHeight = 8;
-      const handleY = y - handleHeight;
-      
-      // Fondo del handle
-      this.ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-      this.ctx.fillRect(x, handleY, this.barWidth, handleHeight);
-      
-      // Líneas del handle para indicar que es draggable
-      this.ctx.strokeStyle = '#fff';
-      this.ctx.lineWidth = 1;
-      for (let i = 0; i < 3; i++) {
-        const lineY = handleY + 2 + i * 2;
+      // Border top brillante durante drag
+      if (isDragging) {
+        this.ctx.strokeStyle = this.config.items[index].color;
+        this.ctx.lineWidth = 3;
         this.ctx.beginPath();
-        this.ctx.moveTo(x + 5, lineY);
-        this.ctx.lineTo(x + this.barWidth - 5, lineY);
+        this.ctx.moveTo(x, y);
+        this.ctx.lineTo(x + this.barWidth, y);
         this.ctx.stroke();
       }
       
-      // Valor encima del handle
-      this.ctx.fillStyle = '#333';
+      // Puntos de agarre en la parte superior (3 círculos)
+      const dotRadius = 2;
+      const dotY = y - 12;
+      const dotSpacing = this.barWidth / 4;
+      
+      for (let i = 0; i < 3; i++) {
+        const dotX = x + dotSpacing + i * dotSpacing;
+        
+        // Sombra del punto
+        this.ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
+        this.ctx.shadowBlur = 2;
+        this.ctx.shadowOffsetY = 1;
+        
+        // Punto de agarre
+        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+        this.ctx.beginPath();
+        this.ctx.arc(dotX, dotY, dotRadius, 0, 2 * Math.PI);
+        this.ctx.fill();
+        
+        // Resetear sombra
+        this.ctx.shadowBlur = 0;
+        this.ctx.shadowOffsetY = 0;
+      }
+      
+      // Valor encima con fondo destacado durante drag
+      const valueY = y - 20;
+      const valueText = Math.round(this.tableValues[index]).toString();
+      
+      if (isDragging) {
+        // Fondo semi-transparente más destacado para el valor
+        this.ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+        this.ctx.fillRect(x + this.barWidth / 2 - 18, valueY - 20, 36, 24);
+        this.ctx.fillStyle = '#fff';
+        
+        // Mostrar también indicador de "arrastrando"
+        this.ctx.font = 'bold 18px "DM Sans", sans-serif';
+      } else if (isHovered) {
+        // Fondo sutil para hover
+        this.ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        this.ctx.fillRect(x + this.barWidth / 2 - 15, valueY - 18, 30, 20);
+        this.ctx.fillStyle = '#333';
+        this.ctx.font = 'bold 16px "DM Sans", sans-serif';
+      } else {
+        this.ctx.fillStyle = '#333';
+        this.ctx.font = 'bold 16px "DM Sans", sans-serif';
+      }
+      
       this.ctx.textAlign = 'center';
-      this.ctx.font = 'bold 16px "DM Sans", sans-serif';
-      this.ctx.fillText(value.toString(), x + this.barWidth / 2, handleY - 5);
+      this.ctx.fillText(valueText, x + this.barWidth / 2, valueY);
     });
   }
 
@@ -593,20 +671,23 @@ export class InteractiveChartExerciseComponent implements OnInit, AfterViewInit,
     const target = event.target as HTMLInputElement;
     const newValue = Math.max(0, Math.min(25, Number(target.value)));
     this.tableValues[index] = newValue;
-    this.drawChart();
+    this.targetValues[index] = newValue;
+    this.startSmoothAnimation();
   }
 
   incrementValue(index: number): void {
     if (this.tableValues[index] < 25) {
       this.tableValues[index]++;
-      this.drawChart();
+      this.targetValues[index] = this.tableValues[index];
+      this.startSmoothAnimation();
     }
   }
 
   decrementValue(index: number): void {
     if (this.tableValues[index] > 0) {
       this.tableValues[index]--;
-      this.drawChart();
+      this.targetValues[index] = this.tableValues[index];
+      this.startSmoothAnimation();
     }
   }
 
@@ -635,10 +716,19 @@ export class InteractiveChartExerciseComponent implements OnInit, AfterViewInit,
   }
 
   resetExercise(): void {
+    // Limpiar animaciones pendientes
+    if (this.animationFrameId) {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = null;
+    }
+    
     this.initializeTableValues();
     this.showFeedback = false;
     this.isCompleted = false;
     this.currentView = 'question';
+    this.hoveredBarIndex = -1;
+    this.isDraggingBar = false;
+    this.dragBarIndex = -1;
     this.generateEmojiPositions();
     this.drawChart();
   }
@@ -680,7 +770,12 @@ export class InteractiveChartExerciseComponent implements OnInit, AfterViewInit,
       this.dragBarIndex = barIndex;
       this.barDragStartY = y;
       this.barDragCurrentValue = this.tableValues[barIndex];
-      this.canvas.style.cursor = 'ns-resize';
+      this.canvas.className = 'chart-canvas cursor-grabbing';
+      
+      // Haptic feedback si está disponible
+      if (navigator.vibrate) {
+        navigator.vibrate(10);
+      }
     }
   }
 
@@ -692,18 +787,65 @@ export class InteractiveChartExerciseComponent implements OnInit, AfterViewInit,
     const y = event.clientY - rect.top;
     
     if (this.isDraggingBar && this.dragBarIndex !== -1) {
-      // Calcular nuevo valor basado en el movimiento
-      const deltaY = this.barDragStartY - y; // Invertir para que arriba sea positivo
-      const maxValue = Math.max(...this.tableValues, 1) + 2;
-      const valueChange = Math.round(deltaY / (this.chartHeight / maxValue));
-      const newValue = Math.max(0, Math.min(25, this.barDragCurrentValue + valueChange));
+      // Zona muerta para evitar cambios accidentales
+      const deltaY = this.barDragStartY - y;
+      if (Math.abs(deltaY) < this.DEAD_ZONE) return;
       
-      this.tableValues[this.dragBarIndex] = newValue;
-      this.drawChart();
+      // Throttling para mejor control
+      const now = Date.now();
+      if (now - this.lastUpdateTime < this.UPDATE_THROTTLE) return;
+      this.lastUpdateTime = now;
+      
+      // Calcular nuevo valor con sensibilidad reducida
+      const maxValue = Math.max(...this.tableValues, 1) + 2;
+      const baseSensitivity = this.chartHeight / maxValue;
+      const adjustedSensitivity = baseSensitivity * this.SENSITIVITY_FACTOR;
+      
+      // Movimiento más preciso sin aceleración agresiva
+      const rawValueChange = deltaY / adjustedSensitivity;
+      
+      // Suavizar el cambio para mayor precisión
+      let valueChange: number;
+      if (Math.abs(rawValueChange) < 0.5) {
+        valueChange = 0; // Muy pequeño, ignorar
+      } else if (Math.abs(rawValueChange) < 2) {
+        valueChange = Math.sign(rawValueChange); // ±1 para movimientos pequeños
+      } else {
+        valueChange = Math.round(rawValueChange * 0.7); // Reducir velocidad para movimientos grandes
+      }
+      
+      let newValue = Math.max(0, Math.min(25, this.barDragCurrentValue + valueChange));
+      
+      // Solo aplicar magnetismo sutil para valores muy cercanos a enteros
+      const snapThreshold = 0.15; // Más estricto
+      const fractionalPart = newValue % 1;
+      if (fractionalPart < snapThreshold) {
+        newValue = Math.floor(newValue);
+      } else if (fractionalPart > (1 - snapThreshold)) {
+        newValue = Math.ceil(newValue);
+      }
+      
+      // Resistencia suave cerca de límites
+      if (newValue <= 0.5) {
+        newValue = 0;
+      } else if (newValue >= 24.5) {
+        newValue = 25;
+      }
+      
+      // Solo actualizar si hay cambio real
+      if (newValue !== this.tableValues[this.dragBarIndex]) {
+        this.targetValues[this.dragBarIndex] = newValue;
+        this.tableValues[this.dragBarIndex] = newValue;
+        this.startSmoothAnimation();
+      }
     } else {
-      // Cambiar cursor si está sobre una barra
+      // Actualizar estado hover
       const barIndex = this.getBarIndexAtPosition(x, y);
-      this.canvas.style.cursor = barIndex !== -1 ? 'ns-resize' : 'default';
+      if (barIndex !== this.hoveredBarIndex) {
+        this.hoveredBarIndex = barIndex;
+        this.updateCanvasCursor(barIndex);
+        this.drawChart();
+      }
     }
   }
 
@@ -711,10 +853,76 @@ export class InteractiveChartExerciseComponent implements OnInit, AfterViewInit,
     if (this.isDraggingBar) {
       this.isDraggingBar = false;
       this.dragBarIndex = -1;
+      
+      // Pulso visual breve al soltar
       if (this.canvas) {
-        this.canvas.style.cursor = 'default';
+        this.canvas.style.transform = 'scale(1.01)';
+        setTimeout(() => {
+          if (this.canvas) {
+            this.canvas.style.transform = 'scale(1)';
+          }
+        }, 150);
       }
+      
+      // Haptic feedback al soltar
+      if (navigator.vibrate) {
+        navigator.vibrate(5);
+      }
+      
+      this.updateCanvasCursor(this.hoveredBarIndex);
+      
+      // Debounce para el valor final
+      setTimeout(() => {
+        this.drawChart();
+      }, 100);
     }
+  }
+
+  private updateCanvasCursor(barIndex: number): void {
+    if (!this.canvas) return;
+    
+    if (this.isDraggingBar) {
+      this.canvas.className = 'chart-canvas cursor-grabbing';
+    } else if (barIndex !== -1) {
+      this.canvas.className = 'chart-canvas cursor-grab';
+    } else {
+      this.canvas.className = 'chart-canvas';
+    }
+  }
+
+  private startSmoothAnimation(): void {
+    // Temporalmente deshabilitado para debugging
+    // if (this.animationFrameId) return;
+    
+    // Solo sincronizar los valores sin animación
+    for (let i = 0; i < this.currentValues.length; i++) {
+      this.currentValues[i] = this.targetValues[i];
+    }
+    this.drawChart();
+    
+    // const animate = () => {
+    //   let needsUpdate = false;
+    //   
+    //   // Interpolación suave usando lerp
+    //   for (let i = 0; i < this.currentValues.length; i++) {
+    //     const diff = this.targetValues[i] - this.currentValues[i];
+    //     if (Math.abs(diff) > 0.01) {
+    //       this.currentValues[i] += diff * this.LERP_FACTOR;
+    //       needsUpdate = true;
+    //     } else {
+    //       this.currentValues[i] = this.targetValues[i];
+    //     }
+    //   }
+    //   
+    //   if (needsUpdate) {
+    //     this.drawChart();
+    //     this.animationFrameId = requestAnimationFrame(animate);
+    //   } else {
+    //     this.animationFrameId = null;
+    //   }
+    // };
+    // 
+    // this.animationFrameId = requestAnimationFrame(animate);
   }
 
   private getBarIndexAtPosition(x: number, y: number): number {
@@ -723,7 +931,7 @@ export class InteractiveChartExerciseComponent implements OnInit, AfterViewInit,
     const minBarHeight = 20;
     
     for (let i = 0; i < this.config.items.length; i++) {
-      const value = this.tableValues[i];
+      const value = this.currentValues[i];
       let barHeight = (value / maxValue) * this.chartHeight;
       const barX = this.MARGIN.left + i * barSpacing + (barSpacing - this.barWidth) / 2;
       let barY = this.MARGIN.top + this.chartHeight - barHeight;
@@ -734,13 +942,15 @@ export class InteractiveChartExerciseComponent implements OnInit, AfterViewInit,
         barY = this.MARGIN.top + this.chartHeight - barHeight;
       }
       
-      // Incluir el handle de arrastre
-      const handleHeight = 8;
-      const handleY = barY - handleHeight;
+      // Área expandida para mejor detección (incluye puntos de agarre)
+      const detectionPadding = 10;
+      const topY = barY - 25; // Incluir área de puntos de agarre
+      const bottomY = this.MARGIN.top + this.chartHeight;
+      const leftX = barX - detectionPadding;
+      const rightX = barX + this.barWidth + detectionPadding;
       
-      // Verificar si el clic está en la barra o el handle
-      if (x >= barX && x <= barX + this.barWidth && 
-          y >= handleY && y <= this.MARGIN.top + this.chartHeight) {
+      // Verificar si el clic está en el área expandida de la barra
+      if (x >= leftX && x <= rightX && y >= topY && y <= bottomY) {
         return i;
       }
     }
