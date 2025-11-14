@@ -16,7 +16,7 @@ export class LandingComponent {
   }
 
   navigateToRegister(): void {
-    this.router.navigate(['/role-selection']);
+    this.router.navigate(['/student-register']);
   }
 
   onImageError(event: any): void {

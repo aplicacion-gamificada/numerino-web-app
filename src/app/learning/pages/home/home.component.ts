@@ -51,11 +51,34 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadStudentData();
+    this.loadStudentName();
   }
 
   ngOnDestroy(): void {
     // Cleanup si es necesario
   }
+
+  loadStudentName(): void {
+    this.isLoading = true;
+    this.userService.getProfile().subscribe({
+      next: (student: StudentDetail) => {
+        this.studentName = student.fullName || student.firstName || '';
+        this.user.name = this.studentName;
+        this.isLoading = false;
+      },
+      error: (err) => {
+        this.hasError = true;
+        this.errorMessage = 'No se pudo cargar el perfil del estudiante';
+        this.isLoading = false;
+        console.error('Error al cargar perfil:', err);
+      }
+    });
+  }
+
+  user = {
+    name: ' ',
+    avatar: ' '
+  };
 
   public loadStudentData() {
     this.isLoading = true;

@@ -53,7 +53,7 @@ export class SidebarMenuComponent implements OnInit{
   ];
 
   user = {
-    name: 'Diego Merino',
-    avatar: 'images/icon-avatar-2.png'
+    name: ' ',
+    avatar: ' '
   };
 }
