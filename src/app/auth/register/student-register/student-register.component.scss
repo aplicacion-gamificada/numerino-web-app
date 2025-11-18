@@ -51,7 +51,7 @@
 
 .form-group {
   position: relative;
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .form-input {
@@ -79,19 +79,68 @@
 
   &.error {
     border-color: #EE656D;
+    animation: shake 0.3s ease;
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.error-message {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #EE656D;
+  font-size: 13px;
+  margin-top: 8px;
+  padding-left: 4px;
+  font-weight: 500;
+  animation: slideDown 0.2s ease;
+
+  span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+
+    &::before {
+      content: '⚠';
+      font-size: 14px;
+    }
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
 .password-toggle {
   position: absolute;
   right: 18px;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 22px;
   background: none;
   border: none;
   cursor: pointer;
   padding: 4px;
   color: #999;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #666;
+  }
+
+  i {
+    font-size: 18px;
+  }
 
   svg {
     width: 20px;
@@ -102,13 +151,17 @@
 .help-icon {
   position: absolute;
   right: 18px;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 22px;
   background: none;
   border: none;
   color: #999;
   cursor: help;
   padding: 4px;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: #ff9933;
+  }
 
   i {
     font-size: 18px;
@@ -131,7 +184,7 @@
 }
 
 .tooltip-content {
-  background: #ff9933; // Color naranja como en la imagen
+  background: #ff9933;
   color: white;
   padding: 10px 14px;
   border-radius: 8px;
@@ -190,6 +243,7 @@
   &:hover:not(:disabled) {
     background-color: #3a4553;
     transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(50, 72, 97, 0.3);
   }
 
   &:active:not(:disabled) {
@@ -199,11 +253,32 @@
   &:disabled {
     background-color: #ccc;
     cursor: not-allowed;
+    opacity: 0.6;
   }
 
   svg {
     width: 18px;
     height: 18px;
+  }
+}
+
+.form-error-summary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: #FFF0F0;
+  border: 2px solid #EE656D;
+  color: #EE656D;
+  padding: 14px;
+  border-radius: 10px;
+  margin-top: 16px;
+  font-size: 14px;
+  font-weight: 500;
+  animation: slideDown 0.3s ease;
+
+  i {
+    font-size: 18px;
   }
 }
 
@@ -214,5 +289,9 @@
 
   .title {
     font-size: 28px;
+  }
+
+  .error-message {
+    font-size: 12px;
   }
 }

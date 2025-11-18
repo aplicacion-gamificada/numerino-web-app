@@ -7,35 +7,87 @@
 
   <form [formGroup]="registrationForm" (ngSubmit)="handleSubmit()">
     <div class="form-group">
-      <input type="text" class="form-input" placeholder="Nombre completo" formControlName="fullName">
+      <input 
+        type="text" 
+        class="form-input" 
+        placeholder="Nombre completo" 
+        formControlName="fullName"
+        [class.error]="fullName?.invalid && fullName?.touched">
+      <div class="error-message" *ngIf="fullName?.invalid && fullName?.touched">
+        <span *ngIf="fullName?.errors?.['required']">El nombre completo es obligatorio</span>
+        <span *ngIf="fullName?.errors?.['minlength']">El nombre debe tener al menos 2 caracteres</span>
+        <span *ngIf="fullName?.errors?.['pattern']">El nombre solo puede contener letras y espacios</span>
+        <span *ngIf="fullName?.errors?.['invalidFormat']">Debes ingresar nombre y apellido</span>
+      </div>
     </div>
 
     <div class="form-group">
-      <input type="text" class="form-input" placeholder="Apodo" formControlName="nickname">
+      <input 
+        type="text" 
+        class="form-input" 
+        placeholder="Apodo" 
+        formControlName="nickname"
+        [class.error]="nickname?.invalid && nickname?.touched">
+      <div class="error-message" *ngIf="nickname?.invalid && nickname?.touched">
+        <span *ngIf="nickname?.errors?.['required']">El apodo es obligatorio</span>
+        <span *ngIf="nickname?.errors?.['minlength']">El apodo debe tener entre 3 y 20 caracteres</span>
+        <span *ngIf="nickname?.errors?.['maxlength']">El apodo debe tener entre 3 y 20 caracteres</span>
+        <span *ngIf="nickname?.errors?.['pattern']">Solo puede contener letras, números, puntos, guiones y guiones bajos</span>
+      </div>
     </div>
 
     <div class="form-group">
-      <input type="text" class="form-input" placeholder="Correo electrónico de tu apoderado" formControlName="email">
+      <input 
+        type="text" 
+        class="form-input" 
+        placeholder="Correo electrónico de tu apoderado" 
+        formControlName="email"
+        [class.error]="email?.invalid && email?.touched">
+      <div class="error-message" *ngIf="email?.invalid && email?.touched">
+        <span *ngIf="email?.errors?.['required']">El correo electrónico es obligatorio</span>
+        <span *ngIf="email?.errors?.['email']">Ingresa un correo válido</span>
+      </div>
     </div>
 
     <div class="form-group">
-      <input [type]="showPassword ? 'text' : 'password'" class="form-input" placeholder="Contraseña"
-        formControlName="password">
+      <input 
+        [type]="showPassword ? 'text' : 'password'" 
+        class="form-input" 
+        placeholder="Contraseña"
+        formControlName="password"
+        [class.error]="password?.invalid && password?.touched">
       <button type="button" class="password-toggle" (click)="togglePassword()">
         <i [class]="showPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
       </button>
+      <div class="error-message" *ngIf="password?.invalid && password?.touched">
+        <span *ngIf="password?.errors?.['required']">La contraseña es obligatoria</span>
+        <span *ngIf="password?.errors?.['minlength']">Mínimo 6 caracteres</span>
+        <span *ngIf="password?.errors?.['pattern']">Debe incluir mayúscula, minúscula, número y carácter especial</span>
+      </div>
     </div>
 
     <div class="form-group">
-      <input [type]="showConfirmPassword ? 'text' : 'password'" class="form-input" placeholder="Confirma tu contraseña"
-        formControlName="confirmPassword" [class.error]="hasPasswordMismatch()">
+      <input 
+        [type]="showConfirmPassword ? 'text' : 'password'" 
+        class="form-input" 
+        placeholder="Confirma tu contraseña"
+        formControlName="confirmPassword" 
+        [class.error]="(confirmPassword?.invalid && confirmPassword?.touched) || hasPasswordMismatch()">
       <button type="button" class="password-toggle" (click)="toggleConfirmPassword()">
         <i [class]="showConfirmPassword ? 'pi pi-eye-slash' : 'pi pi-eye'"></i>
       </button>
+      <div class="error-message" *ngIf="confirmPassword?.touched">
+        <span *ngIf="confirmPassword?.errors?.['required']">Confirma tu contraseña</span>
+        <span *ngIf="hasPasswordMismatch()">Las contraseñas no coinciden</span>
+      </div>
     </div>
 
     <div class="form-group">
-      <input type="text" class="form-input" placeholder="Código de clase (opcional)" formControlName="classCode">
+      <input 
+        type="text" 
+        class="form-input" 
+        placeholder="Código de clase (opcional)" 
+        formControlName="classCode">
       <button type="button" class="help-icon" (mouseenter)="showTooltip = true" (mouseleave)="showTooltip = false">
         <i class="pi pi-question-circle"></i>
       </button>
@@ -51,9 +103,15 @@
       Al registrarte aceptas nuestra <a href="#" class="terms-link">Política de Términos y Condiciones</a>
     </p>
 
-    <button type="submit" class="register-button" [disabled]="!registrationForm.valid">
-      Registrar
-      <span class="btn-arrow">→</span>
+    <button type="submit" class="register-button" [disabled]="isSubmitting">
+      <span *ngIf="!isSubmitting">Registrar</span>
+      <span *ngIf="isSubmitting">Registrando...</span>
+      <span class="btn-arrow" *ngIf="!isSubmitting">→</span>
     </button>
+
+    <div class="form-error-summary" *ngIf="showFormErrors && registrationForm.invalid">
+      <i class="pi pi-exclamation-circle"></i>
+      Por favor, corrige los errores antes de continuar
+    </div>
   </form>
 </div>

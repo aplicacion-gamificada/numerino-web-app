@@ -16,6 +16,8 @@ export class StudentRegisterComponent implements OnInit {
   showPassword: boolean = false;
   showConfirmPassword: boolean = false;
   showTooltip: boolean = false;
+  showFormErrors: boolean = false;
+  isSubmitting: boolean = false;
 
   constructor(
     private fb: FormBuilder,
@@ -29,9 +31,19 @@ export class StudentRegisterComponent implements OnInit {
 
   private initializeForm(): void {
     this.registrationForm = this.fb.group({
-      fullName: ['', [Validators.required, Validators.minLength(2)]],
-      nickname: ['', [Validators.required, Validators.minLength(2)]],
-      email: ['', [Validators.required, Validators.minLength(2)]],
+      fullName: ['', [
+        Validators.required, 
+        Validators.minLength(2),
+        Validators.pattern(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/),
+        this.fullNameValidator
+      ]],
+      nickname: ['', [
+        Validators.required, 
+        Validators.minLength(3),
+        Validators.maxLength(20),
+        Validators.pattern(/^[a-zA-Z0-9._-]+$/)
+      ]],
+      email: ['', [Validators.required, Validators.email]],
       password: [
         '',
         [
@@ -58,9 +70,30 @@ export class StudentRegisterComponent implements OnInit {
     return password.value === confirmPassword.value ? null : { passwordMismatch: true };
   }
 
+  private fullNameValidator(control: AbstractControl): { [key: string]: boolean } | null {
+    if (!control.value) {
+      return null;
+    }
+
+    const fullName = control.value.trim();
+    const parts = fullName.split(/\s+/).filter((part: string) => part.length > 0);
+
+    // Debe tener al menos nombre y apellido (2 partes)
+    if (parts.length < 2) {
+      return { invalidFormat: true };
+    }
+
+    // Cada parte debe tener al menos 2 caracteres
+    const allPartsValid = parts.every((part: string) => part.length >= 2);
+    if (!allPartsValid) {
+      return { invalidFormat: true };
+    }
+
+    return null;
+  }
+
   goBack(): void {
     window.history.back();
-
     console.log('Navegando hacia atrás');
   }
 
@@ -81,6 +114,7 @@ export class StudentRegisterComponent implements OnInit {
 
   handleSubmit(): void {
     if (this.registrationForm.valid) {
+      this.showFormErrors = false;
       const formData = {
         fullName: this.registrationForm.get('fullName')?.value,
         nickname: this.registrationForm.get('nickname')?.value,
@@ -91,7 +125,9 @@ export class StudentRegisterComponent implements OnInit {
       };
       this.submitRegistration(formData);
     } else {
+      this.showFormErrors = true;
       this.markFormGroupTouched();
+      this.scrollToFirstError();
     }
   }
 
@@ -100,6 +136,15 @@ export class StudentRegisterComponent implements OnInit {
       const control = this.registrationForm.get(key);
       control?.markAsTouched();
     });
+  }
+
+  private scrollToFirstError(): void {
+    setTimeout(() => {
+      const firstError = document.querySelector('.form-input.error');
+      if (firstError) {
+        firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
   }
 
   toggleTooltip(): void {
@@ -111,8 +156,14 @@ export class StudentRegisterComponent implements OnInit {
   }
 
   private submitRegistration(data: any): void {
-    const [firstName, ...lastNameArr] = data.fullName.trim().split(' ');
-    const lastName = lastNameArr.join(' ') || '';
+    this.isSubmitting = true;
+    
+    // Separar nombre completo en firstName y lastName
+    const fullName = data.fullName.trim();
+    const parts = fullName.split(/\s+/).filter((part: string) => part.length > 0);
+    
+    const firstName = parts[0];
+    const lastName = parts.slice(1).join(' ');
 
     const studentData: StudentRegisterRequest = {
       firstName: firstName,
@@ -127,10 +178,13 @@ export class StudentRegisterComponent implements OnInit {
 
     this.registerService.registerStudent(studentData).subscribe({
       next: (response) => {
+        this.isSubmitting = false;
         this.router.navigate(['/home']);
       },
       error: (error) => {
-        alert('Error al registrar. Por favor, inténtalo de nuevo.');
+        this.isSubmitting = false;
+        const errorMessage = error.error?.message || 'Error al registrar. Por favor, inténtalo de nuevo.';
+        alert(errorMessage);
       }
     });
   }
